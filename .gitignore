@@ -18,6 +18,7 @@ out/
 .vscode/
 .idea/
 .vs/
+node_modules/
 wwwroot/lib/
 
 # DotNet Core-specific files
