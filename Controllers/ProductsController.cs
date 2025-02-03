@@ -7,14 +7,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
+using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProductsRepository _context;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(IProductsRepository context)
         {
             _context = context;
         }
@@ -22,7 +23,7 @@ namespace Mini_ERP.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            return View(await _context.products.ToListAsync());
+            return View(await _context.GetProducts());
         }
 
         // GET: Products/Details/5
@@ -33,8 +34,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var product = await _context.products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _context.GetProduct(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -59,8 +59,7 @@ namespace Mini_ERP.Controllers
             if (ModelState.IsValid)
             {
                 product.Id = Guid.NewGuid();
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                await _context.AddProduct(product);
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
@@ -74,7 +73,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var product = await _context.products.FindAsync(id);
+            var product = await _context.GetProduct(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -98,12 +97,12 @@ namespace Mini_ERP.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    await _context.UpdateProduct(id ,product);
+                    
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!await ProductExists(product.Id))
                     {
                         return NotFound();
                     }
@@ -125,8 +124,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var product = await _context.products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _context.GetProduct(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -140,19 +138,18 @@ namespace Mini_ERP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var product = await _context.products.FindAsync(id);
+            var product = await _context.GetProduct(id);
             if (product != null)
             {
-                _context.products.Remove(product);
+                await _context.DeleteProduct(id);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(Guid id)
+        private async Task<bool> ProductExists(Guid id)
         {
-            return _context.products.Any(e => e.Id == id);
+            return await _context.ProductExists(id);
         }
     }
 }

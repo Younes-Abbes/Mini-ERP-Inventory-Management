@@ -4,7 +4,18 @@ using Mini_ERP.Models;
 
 namespace Mini_ERP.Repositories
 {
-    public class InventoryTransactionsRepository
+    public interface IInventoryTransactionsRepository
+    {
+        Task<IEnumerable<InventoryTransaction>> GetInventoryTransactions();
+        Task<InventoryTransaction?> GetInventoryTransaction(Guid id);
+        Task<InventoryTransaction> AddInventoryTransaction(InventoryTransaction inventoryTransaction);
+        Task<InventoryTransaction?> UpdateInventoryTransaction(Guid id, InventoryTransaction inventoryTransaction);
+        Task<InventoryTransaction?> DeleteInventoryTransaction(Guid id);
+
+        Task<bool> InventoryTransactionExists(Guid id);
+        void SaveChanges();
+    }
+    public class InventoryTransactionsRepository : IInventoryTransactionsRepository
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<InventoryTransaction> _inventoryTransactions;
@@ -57,6 +68,11 @@ namespace Mini_ERP.Repositories
         public async void SaveChanges()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> InventoryTransactionExists(Guid id)
+        {
+            return await _inventoryTransactions.AnyAsync(it => it.Id == id);
         }
     }
 }

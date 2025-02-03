@@ -4,7 +4,18 @@ using Mini_ERP.Models;
 
 namespace Mini_ERP.Repositories
 {
-    public class ProductsRepository
+    public interface IProductsRepository
+    {
+        Task<IEnumerable<Product>> GetProducts();
+        Task<Product?> GetProduct(Guid id);
+        Task<Product> AddProduct(Product product);
+        Task<Product?> UpdateProduct(Guid id, Product product);
+        Task<Product?> DeleteProduct(Guid id);
+
+        Task<bool> ProductExists(Guid id);
+        void saveChanges();
+    }
+    public class ProductsRepository : IProductsRepository
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<Product> _products;
@@ -53,6 +64,11 @@ namespace Mini_ERP.Repositories
         public async void saveChanges()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public Task<bool> ProductExists(Guid id)
+        {
+            return _products.AnyAsync(e => e.Id == id);
         }
     }
 }

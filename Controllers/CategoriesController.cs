@@ -7,14 +7,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
+using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
     public class CategoriesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICategoriesRepository _context;
 
-        public CategoriesController(ApplicationDbContext context)
+        public CategoriesController(ICategoriesRepository context)
         {
             _context = context;
         }
@@ -22,7 +23,7 @@ namespace Mini_ERP.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.categories.ToListAsync());
+            return View(await _context.GetCategories());
         }
 
         // GET: Categories/Details/5
@@ -33,8 +34,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var category = await _context.categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var category = await _context.GetCategory(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -59,8 +59,7 @@ namespace Mini_ERP.Controllers
             if (ModelState.IsValid)
             {
                 category.Id = Guid.NewGuid();
-                _context.Add(category);
-                await _context.SaveChangesAsync();
+                await _context.AddCategory(category);
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
@@ -74,7 +73,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var category = await _context.categories.FindAsync(id);
+            var category = await _context.GetCategory(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -98,12 +97,11 @@ namespace Mini_ERP.Controllers
             {
                 try
                 {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
+                    await _context.UpdateCategory(id, category);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoryExists(category.Id))
+                    if (!await CategoryExists(category.Id))
                     {
                         return NotFound();
                     }
@@ -125,8 +123,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var category = await _context.categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var category = await _context.DeleteCategory(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -140,19 +137,18 @@ namespace Mini_ERP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var category = await _context.categories.FindAsync(id);
+            var category = await _context.GetCategory(id);
             if (category != null)
             {
-                _context.categories.Remove(category);
+                await _context.DeleteCategory(id);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CategoryExists(Guid id)
+        private async Task<bool> CategoryExists(Guid id)
         {
-            return _context.categories.Any(e => e.Id == id);
+            return await _context.CategoryExists(id);
         }
     }
 }

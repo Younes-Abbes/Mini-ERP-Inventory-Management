@@ -4,7 +4,18 @@ using Mini_ERP.Models;
 
 namespace Mini_ERP.Repositories
 {
-    public class CategoriesRepository
+    public interface ICategoriesRepository
+    {
+        Task<IEnumerable<Category>> GetCategories();
+        Task<Category?> GetCategory(Guid id);
+        Task<Category> AddCategory(Category category);
+        Task<Category?> UpdateCategory(Guid id, Category category);
+        Task<Category?> DeleteCategory(Guid id);
+
+        Task<bool> CategoryExists(Guid id);
+        void saveChanges();
+    }
+    public class CategoriesRepository : ICategoriesRepository
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<Category> _categories;
@@ -53,6 +64,11 @@ namespace Mini_ERP.Repositories
         public async void saveChanges()
         {
             await _context.SaveChangesAsync();
-        }   
+        }
+
+        public Task<bool> CategoryExists(Guid id)
+        {
+            return _categories.AnyAsync(e => e.Id == id);
+        }
     }
 }
