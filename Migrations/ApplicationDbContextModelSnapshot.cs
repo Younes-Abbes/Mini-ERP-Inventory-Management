@@ -76,6 +76,37 @@ namespace Mini_ERP.Migrations
                     b.ToTable("customers");
                 });
 
+            modelBuilder.Entity("Mini_ERP.Models.InventoryTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ReferenceId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TransactionType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("InventoryTransactions");
+                });
+
             modelBuilder.Entity("Mini_ERP.Models.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -282,6 +313,15 @@ namespace Mini_ERP.Migrations
                     b.HasIndex("supplierId");
 
                     b.HasDiscriminator().HasValue("SupplierOrder");
+                });
+
+            modelBuilder.Entity("Mini_ERP.Models.InventoryTransaction", b =>
+                {
+                    b.HasOne("Mini_ERP.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Mini_ERP.Models.Order", b =>

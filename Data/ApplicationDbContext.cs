@@ -19,6 +19,7 @@ namespace Mini_ERP.Data
         public DbSet<Supplier> suppliers { get; set; }
         public DbSet<SupplierOrder> supplierOrders { get; set; }
         public DbSet<Mini_ERP.Models.Order> Order { get; set; } = default!;
+        public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
     }
     
 }

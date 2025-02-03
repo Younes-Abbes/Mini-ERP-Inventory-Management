@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Mini_ERP.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class initialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -112,19 +112,14 @@ namespace Mini_ERP.Migrations
                     Total = table.Column<decimal>(type: "numeric", nullable: false),
                     SubTotal = table.Column<decimal>(type: "numeric", nullable: false),
                     ShipmentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: true),
                     Discriminator = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
+                    orderId = table.Column<Guid>(type: "uuid", nullable: true),
                     customerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    SupplierId = table.Column<Guid>(type: "uuid", nullable: true)
+                    supplierId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Order", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Order_customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "customers",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Order_customers_customerId",
                         column: x => x.customerId,
@@ -132,17 +127,44 @@ namespace Mini_ERP.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Order_customers_orderId",
+                        column: x => x.orderId,
+                        principalTable: "customers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_Order_shipments_ShipmentId",
                         column: x => x.ShipmentId,
                         principalTable: "shipments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Order_suppliers_SupplierId",
-                        column: x => x.SupplierId,
+                        name: "FK_Order_suppliers_supplierId",
+                        column: x => x.supplierId,
                         principalTable: "suppliers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TransactionType = table.Column<int>(type: "integer", nullable: false),
+                    Quantity = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    ReferenceId = table.Column<int>(type: "integer", nullable: true),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InventoryTransactions_products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "products",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -172,14 +194,19 @@ namespace Mini_ERP.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_InventoryTransactions_ProductId",
+                table: "InventoryTransactions",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Order_customerId",
                 table: "Order",
                 column: "customerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_CustomerId",
+                name: "IX_Order_orderId",
                 table: "Order",
-                column: "CustomerId");
+                column: "orderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Order_ShipmentId",
@@ -187,9 +214,9 @@ namespace Mini_ERP.Migrations
                 column: "ShipmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_SupplierId",
+                name: "IX_Order_supplierId",
                 table: "Order",
-                column: "SupplierId");
+                column: "supplierId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_orderItems_OrderId",
@@ -210,6 +237,9 @@ namespace Mini_ERP.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "InventoryTransactions");
+
             migrationBuilder.DropTable(
                 name: "orderItems");
 
