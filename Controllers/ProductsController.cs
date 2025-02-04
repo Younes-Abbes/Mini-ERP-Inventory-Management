@@ -97,6 +97,7 @@ namespace Mini_ERP.Controllers
         }
 
         // GET: Products/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(Guid? id)
         {
             if (id == null)
@@ -117,11 +118,12 @@ namespace Mini_ERP.Controllers
                     Value = c.Id.ToString(),
                     Text = c.Name
                 }),
+                createdAt = product.CreatedAt,
                 Name = product.Name,
                 Id = product.Id,
                 Description = product.Description,
                 Quantity = product.Quantity,
-                minimumQuantity = product.Quantity,
+                minimumQuantity = product.minimumQuantity,
                 UnitPrice = product.UnitPrice,
                 UpdatedAt = product.UpdatedAt,
                 category = product.category.Id.ToString(),
@@ -160,11 +162,12 @@ namespace Mini_ERP.Controllers
                         Description = createProductRequest.Description,
                         Quantity = createProductRequest.Quantity,
                         UnitPrice = createProductRequest.UnitPrice,
-                        minimumQuantity = createProductRequest.Quantity,
+                        minimumQuantity = createProductRequest.minimumQuantity,
                         UpdatedAt = DateTime.UtcNow,
-                        category = category
+                        category = category,
+                        CreatedAt = createProductRequest.createdAt,
                     };
-                    await _context.UpdateProduct(id , product);
+                    var result = await _context.UpdateProduct(id , product);
                     
                 }
                 catch (DbUpdateConcurrencyException)

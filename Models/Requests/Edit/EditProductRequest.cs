@@ -13,6 +13,7 @@ namespace Mini_ERP.Models.Requests.Edit
         public decimal UnitPrice { get; set; }
 
         public DateTime UpdatedAt { get; set; }
+        public DateTime createdAt { get; set; }
 
         public IEnumerable<SelectListItem> categories { get; set; }
 

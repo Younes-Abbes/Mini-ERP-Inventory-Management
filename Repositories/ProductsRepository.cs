@@ -47,6 +47,12 @@ namespace Mini_ERP.Repositories
             }
             existingProduct.Name = product.Name;
             existingProduct.Description = product.Description;
+            existingProduct.UnitPrice = product.UnitPrice;
+            existingProduct.Quantity = product.Quantity;
+            existingProduct.minimumQuantity = product.minimumQuantity;
+            existingProduct.category = product.category;
+            existingProduct.CreatedAt = product.CreatedAt;
+            existingProduct.UpdatedAt = product.UpdatedAt;
             await _context.SaveChangesAsync();
             return existingProduct;
         }
