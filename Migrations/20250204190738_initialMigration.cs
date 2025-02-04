@@ -174,7 +174,7 @@ namespace Mini_ERP.Migrations
                     TransactionType = table.Column<int>(type: "integer", nullable: false),
                     Quantity = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),
-                    ReferenceId = table.Column<int>(type: "integer", nullable: true),
+                    ReferenceId = table.Column<Guid>(type: "uuid", nullable: true),
                     ProductId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>

@@ -97,8 +97,8 @@ namespace Mini_ERP.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mini_ERP.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250204143130_initialMigration")]
+    [Migration("20250204190738_initialMigration")]
     partial class initialMigration
     {
         /// <inheritdoc />
@@ -100,8 +100,8 @@ namespace Mini_ERP.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");

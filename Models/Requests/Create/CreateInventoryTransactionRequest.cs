@@ -1,4 +1,6 @@
-﻿namespace Mini_ERP.Models.Requests.Create
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace Mini_ERP.Models.Requests.Create
 {
     public class CreateInventoryTransactionRequest
     {
@@ -10,8 +12,9 @@
 
 
         public string? Notes { get; set; }
-        public int? ReferenceId { get; set; }  // For linking to orders/purchases
+        public Guid? ReferenceId { get; set; }  // For linking to orders/purchases
 
-        public virtual Product? Product { get; set; }
+        public virtual string? Product { get; set; }
+        public IEnumerable<SelectListItem> products { get; set; }
     }
 }

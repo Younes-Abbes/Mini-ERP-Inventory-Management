@@ -2,6 +2,7 @@
 {
     public class EditInventoryTransactionRequest
     {
+        public Guid Id { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         public TransactionType TransactionType { get; set; }
@@ -10,7 +11,7 @@
 
 
         public string? Notes { get; set; }
-        public int? ReferenceId { get; set; }  // For linking to orders/purchases
+        public Guid? ReferenceId { get; set; }  // For linking to orders/purchases
 
         public virtual Product? Product { get; set; }
     }

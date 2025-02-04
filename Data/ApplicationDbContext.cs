@@ -21,6 +21,8 @@ namespace Mini_ERP.Data
 
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
         public DbSet<Mini_ERP.Models.PurchaseOrder> PurchaseOrders { get; set; } = default!;
+
+        
     }
     
 }

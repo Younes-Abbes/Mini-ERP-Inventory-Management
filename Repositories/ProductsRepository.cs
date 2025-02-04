@@ -11,6 +11,7 @@ namespace Mini_ERP.Repositories
         Task<Product> AddProduct(Product product);
         Task<Product?> UpdateProduct(Guid id, Product product);
         Task<Product?> DeleteProduct(Guid id);
+        Task<IEnumerable<Product>> GetProductsByName(string name);
 
         Task<bool> ProductExists(Guid id);
         void saveChanges();
@@ -75,6 +76,12 @@ namespace Mini_ERP.Repositories
         public Task<bool> ProductExists(Guid id)
         {
             return _products.AnyAsync(e => e.Id == id);
+        }
+
+        public async Task<IEnumerable<Product>> GetProductsByName(string name)
+        {
+            
+            return await _products.Include(x => x.category).Where(p => p.Name.Contains(name) || p.Description.Contains(name)).ToListAsync();
         }
     }
 }

@@ -7,25 +7,30 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
+using Mini_ERP.Models.Requests.Create;
+using Mini_ERP.Models.Requests.Edit;
+using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
     public class InventoryTransactionsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IInventoryTransactionsRepository _context;
+        private readonly IProductsRepository _productRepository;
 
-        public InventoryTransactionsController(ApplicationDbContext context)
+        public InventoryTransactionsController(IInventoryTransactionsRepository context, IProductsRepository productsRepository)
         {
             _context = context;
+            _productRepository = productsRepository;
         }
 
-        // GET: InventoryTransactions
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.InventoryTransactions.ToListAsync());
+            return View(await _context.GetInventoryTransactions());
         }
 
-        // GET: InventoryTransactions/Details/5
+        [HttpGet]
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -33,8 +38,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var inventoryTransaction = await _context.InventoryTransactions
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var inventoryTransaction = await _context.GetInventoryTransaction(id.Value);
             if (inventoryTransaction == null)
             {
                 return NotFound();
@@ -43,67 +47,99 @@ namespace Mini_ERP.Controllers
             return View(inventoryTransaction);
         }
 
-        // GET: InventoryTransactions/Create
-        public IActionResult Create()
+        [HttpGet]
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var products = await _productRepository.GetProducts();
+            var viewModel = new CreateInventoryTransactionRequest
+            {
+                products = products.Select(x => new SelectListItem(x.Name, x.Id.ToString())),
+                Timestamp = DateTime.UtcNow,
+                TransactionType = TransactionType.Refill,
+                Product = null,
+                Notes = string.Empty,
+                Quantity = 0,
+                ReferenceId = Guid.Empty
+            };
+            return View(viewModel);
         }
 
-        // POST: InventoryTransactions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Timestamp,TransactionType,Quantity,ProductId,Notes,ReferenceId")] InventoryTransaction inventoryTransaction)
+        
+        public async Task<IActionResult> Create(CreateInventoryTransactionRequest createInventoryTransactionRequest)
         {
             if (ModelState.IsValid)
             {
-                inventoryTransaction.Id = Guid.NewGuid();
-                _context.Add(inventoryTransaction);
-                await _context.SaveChangesAsync();
+                var product = await _productRepository.GetProduct(Guid.Parse(createInventoryTransactionRequest.Product));
+                var inventoryTransaction = new InventoryTransaction
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = DateTime.UtcNow,
+                    ReferenceId = createInventoryTransactionRequest.ReferenceId,
+                    TransactionType = createInventoryTransactionRequest.TransactionType,
+                    Quantity = createInventoryTransactionRequest.Quantity,
+                    Notes = createInventoryTransactionRequest.Notes,
+                    Product = product,
+                };
+                await _context.AddInventoryTransaction(inventoryTransaction);
                 return RedirectToAction(nameof(Index));
             }
-            return View(inventoryTransaction);
+            return View(createInventoryTransactionRequest);
         }
 
-        // GET: InventoryTransactions/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(Guid? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
-            var inventoryTransaction = await _context.InventoryTransactions.FindAsync(id);
+            var inventoryTransaction = await _context.GetInventoryTransaction(id.Value);
             if (inventoryTransaction == null)
             {
                 return NotFound();
             }
-            return View(inventoryTransaction);
+            var viewModel = new EditInventoryTransactionRequest
+            {
+                Id = inventoryTransaction.Id,
+                Timestamp = inventoryTransaction.Timestamp,
+                Notes = inventoryTransaction.Notes,
+                TransactionType = inventoryTransaction.TransactionType,
+                Product = inventoryTransaction.Product,
+                Quantity = inventoryTransaction.Quantity,
+                ReferenceId = inventoryTransaction.ReferenceId,
+            };
+            
+            
+            return View(viewModel);
         }
 
-        // POST: InventoryTransactions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Timestamp,TransactionType,Quantity,ProductId,Notes,ReferenceId")] InventoryTransaction inventoryTransaction)
+        
+        public async Task<IActionResult> Edit(Guid id, EditInventoryTransactionRequest editInventoryTransactionRequest)
         {
-            if (id != inventoryTransaction.Id)
+            if (id != editInventoryTransactionRequest.Id)
             {
                 return NotFound();
             }
-
+            var inventoryTransaction = await _context.GetInventoryTransaction(id);
+            if (inventoryTransaction == null)
+            {
+                return NotFound();
+            }
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(inventoryTransaction);
-                    await _context.SaveChangesAsync();
+                    inventoryTransaction.Quantity = editInventoryTransactionRequest.Quantity;
+                    inventoryTransaction.Notes = editInventoryTransactionRequest.Notes;
+                    await _context.UpdateInventoryTransaction(inventoryTransaction.Id, inventoryTransaction);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!InventoryTransactionExists(inventoryTransaction.Id))
+                    if (!await InventoryTransactionExists(editInventoryTransactionRequest.Id))
                     {
                         return NotFound();
                     }
@@ -117,7 +153,7 @@ namespace Mini_ERP.Controllers
             return View(inventoryTransaction);
         }
 
-        // GET: InventoryTransactions/Delete/5
+        [HttpGet]
         public async Task<IActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -125,8 +161,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var inventoryTransaction = await _context.InventoryTransactions
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var inventoryTransaction = await _context.GetInventoryTransaction(id.Value);
             if (inventoryTransaction == null)
             {
                 return NotFound();
@@ -135,24 +170,22 @@ namespace Mini_ERP.Controllers
             return View(inventoryTransaction);
         }
 
-        // POST: InventoryTransactions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var inventoryTransaction = await _context.InventoryTransactions.FindAsync(id);
+            var inventoryTransaction = await _context.GetInventoryTransaction(id);
             if (inventoryTransaction != null)
             {
-                _context.InventoryTransactions.Remove(inventoryTransaction);
+                await _context.DeleteInventoryTransaction(id);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool InventoryTransactionExists(Guid id)
+        private async Task<bool> InventoryTransactionExists(Guid id)
         {
-            return _context.InventoryTransactions.Any(e => e.Id == id);
+            return await _context.InventoryTransactionExists(id);
         }
     }
 }

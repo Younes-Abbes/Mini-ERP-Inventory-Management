@@ -26,11 +26,11 @@ namespace Mini_ERP.Repositories
         }
         public async Task<IEnumerable<InventoryTransaction>> GetInventoryTransactions()
         {
-            return await _inventoryTransactions.ToListAsync();
+            return await _inventoryTransactions.Include(x => x.Product).ToListAsync();
         }
         public async Task<InventoryTransaction?> GetInventoryTransaction(Guid id)
         {
-            return await _inventoryTransactions.FirstOrDefaultAsync(it => it.Id == id);
+            return await _inventoryTransactions.Include(x => x.Product).FirstOrDefaultAsync(it => it.Id == id);
         }
         public async Task<InventoryTransaction> AddInventoryTransaction(InventoryTransaction inventoryTransaction)
         {

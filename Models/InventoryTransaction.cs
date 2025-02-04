@@ -31,7 +31,7 @@ namespace Mini_ERP.Models
 
 
         public string? Notes { get; set; }
-        public int? ReferenceId { get; set; }  // For linking to orders/purchases
+        public Guid? ReferenceId { get; set; }  // For linking to orders/purchases
 
         public virtual Product? Product { get; set; }
     }

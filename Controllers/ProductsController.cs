@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -17,20 +18,25 @@ namespace Mini_ERP.Controllers
     {
         private readonly IProductsRepository _context;
         private readonly ICategoriesRepository _categoryRepository;
+        private readonly IInventoryTransactionsRepository _inventoryTransactionsRepository;
 
-        public ProductsController(IProductsRepository context, ICategoriesRepository categoriesRepository)
+        public ProductsController(IProductsRepository context, ICategoriesRepository categoriesRepository, IInventoryTransactionsRepository inventoryTransactionsRepository)
         {
             _context = context;
             _categoryRepository = categoriesRepository;
+            _inventoryTransactionsRepository = inventoryTransactionsRepository;
         }
-
-        // GET: Products
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<IActionResult> Index(string search)
         {
+            if (!string.IsNullOrEmpty(search))
+            {
+                return View(await _context.GetProductsByName(search));
+            }
+            
             return View(await _context.GetProducts());
         }
-
-        // GET: Products/Details/5
+        [HttpGet]
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
@@ -46,8 +52,7 @@ namespace Mini_ERP.Controllers
 
             return View(product);
         }
-
-        // GET: Products/Create
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
             var categories = await _categoryRepository.GetCategories();
@@ -67,10 +72,6 @@ namespace Mini_ERP.Controllers
             };
             return View(viewModel);
         }
-
-        // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         public async Task<IActionResult> Create(CreateProductRequest createProductRequest)
         {
@@ -90,13 +91,26 @@ namespace Mini_ERP.Controllers
                     CreatedAt = DateTime.UtcNow,
                     
                 };
-                await _context.AddProduct(product);
+                var result = await _context.AddProduct(product);
+                if (result != null)
+                {
+                    var inventoryTransaction = new InventoryTransaction
+                    {
+                        Id = Guid.NewGuid(),
+                        Notes = String.Empty,
+                        Product = product,
+                        Quantity = product.Quantity,
+                        TransactionType = TransactionType.Refill,
+                        ReferenceId = product.Id,
+                        Timestamp = DateTime.UtcNow,
+                    };
+                    await _inventoryTransactionsRepository.AddInventoryTransaction(inventoryTransaction);
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(createProductRequest);
         }
 
-        // GET: Products/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(Guid? id)
         {
@@ -131,12 +145,7 @@ namespace Mini_ERP.Controllers
             };
             return View(viewModel);
         }
-
-        // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        
         public async Task<IActionResult> Edit(Guid id, EditProductRequest createProductRequest)
         {
             if (id != createProductRequest.Id)
@@ -155,20 +164,32 @@ namespace Mini_ERP.Controllers
                 try
                 {
                     var category = await _categoryRepository.GetCategory(Guid.Parse(createProductRequest.category));
-                    var product = new Product
-                    {
-                        Id = id,
-                        Name = createProductRequest.Name,
-                        Description = createProductRequest.Description,
-                        Quantity = createProductRequest.Quantity,
-                        UnitPrice = createProductRequest.UnitPrice,
-                        minimumQuantity = createProductRequest.minimumQuantity,
-                        UpdatedAt = DateTime.UtcNow,
-                        category = category,
-                        CreatedAt = createProductRequest.createdAt,
-                    };
-                    var result = await _context.UpdateProduct(id , product);
+                    var product = await _context.GetProduct(id);
+                    product.Name = createProductRequest.Name;
+                    product.Description = createProductRequest.Description;
+                    product.Quantity = createProductRequest.Quantity;
+                    product.UnitPrice = createProductRequest.UnitPrice;
+                    product.minimumQuantity = createProductRequest.minimumQuantity;
+                    product.UpdatedAt = DateTime.UtcNow;
+                    product.category = category;
+                        
                     
+                    var result = await _context.UpdateProduct(id , product);
+                    if (result != null)
+                    {
+                        var inventoryTransaction = new InventoryTransaction
+                        {
+                            Id = Guid.NewGuid(),
+                            Notes = String.Empty,
+                            Product = product,
+                            Quantity = product.Quantity,
+                            TransactionType = TransactionType.Adjustment,
+                            ReferenceId = product.Id,
+                            Timestamp = DateTime.UtcNow,
+                        };
+                        await _inventoryTransactionsRepository.AddInventoryTransaction(inventoryTransaction);
+                    }
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -186,7 +207,7 @@ namespace Mini_ERP.Controllers
             return View(createProductRequest);
         }
 
-        // GET: Products/Delete/5
+        [HttpGet]
         public async Task<IActionResult> Delete(Guid? id)
         {
             if (id == null)
@@ -203,7 +224,6 @@ namespace Mini_ERP.Controllers
             return View(product);
         }
 
-        // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
@@ -211,7 +231,18 @@ namespace Mini_ERP.Controllers
             var product = await _context.GetProduct(id);
             if (product != null)
             {
-                await _context.DeleteProduct(id);
+                var result = await _context.DeleteProduct(id);
+                var inventoryTransaction = new InventoryTransaction
+                {
+                    Id = Guid.NewGuid(),
+                    Notes = String.Empty,
+                    Product = product,
+                    Quantity = product.Quantity,
+                    TransactionType = TransactionType.WriteOff,
+                    ReferenceId = product.Id,
+                    Timestamp = DateTime.UtcNow,
+                };
+                await _inventoryTransactionsRepository.AddInventoryTransaction(inventoryTransaction);
             }
 
             return RedirectToAction(nameof(Index));

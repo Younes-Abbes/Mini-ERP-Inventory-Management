@@ -57,6 +57,7 @@ namespace Mini_ERP.Repositories
             {
                 return null;
             }
+            _context.products.RemoveRange(_context.products.Where(p => p.category.Id == id));
             _categories.Remove(existingCategory);
             await _context.SaveChangesAsync();
             return existingCategory;
