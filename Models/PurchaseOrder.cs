@@ -47,8 +47,8 @@ namespace Mini_ERP.Models
 
         public virtual List<OrderItem> OrderItems { get; set; }
 
-        [ForeignKey("customerId")]
-        public Customer customer { get; set; }
+        [ForeignKey("supplierId")]
+        public Supplier supplier { get; set; }
     }
 
         public enum OrderStatus

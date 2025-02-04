@@ -30,5 +30,7 @@ namespace Mini_ERP.Models
         [Required]
         [MaxLength(20)]
         public string PostalCode { get; set; }
+
+
     }
 }

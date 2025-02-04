@@ -26,11 +26,11 @@ namespace Mini_ERP.Repositories
         }
         public async Task<IEnumerable<Customer>> GetCustomers()
         {
-            return await _customers.Include(c => c.Orders).ThenInclude(o => o.OrderItems).ToListAsync();
+            return await _customers.ToListAsync();
         }
         public async Task<Customer?> GetCustomer(Guid id)
         {
-            return await _customers.Include(c => c.Orders).ThenInclude(o => o.OrderItems).FirstOrDefaultAsync(c => c.Id == id);
+            return await _customers.FirstOrDefaultAsync(c => c.Id == id);
         }
         public async Task<Customer> AddCustomer(Customer customer)
         {

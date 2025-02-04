@@ -4,43 +4,43 @@ using Mini_ERP.Models;
 
 namespace Mini_ERP.Repositories
 {
-    public interface IOrdersRepository
+    public interface ISalesOrderRepository
     {
-        Task<IEnumerable<Order>> GetOrders();
-        Task<Order?> GetOrder(Guid id);
-        Task<Order> AddOrder(Order order);
-        Task<Order?> UpdateOrder(Guid id, Order order);
-        Task<Order?> DeleteOrder(Guid id);
+        Task<IEnumerable<SalesOrder>> GetOrders();
+        Task<SalesOrder?> GetOrder(Guid id);
+        Task<SalesOrder> AddOrder(SalesOrder order);
+        Task<SalesOrder?> UpdateOrder(Guid id, SalesOrder order);
+        Task<SalesOrder?> DeleteOrder(Guid id);
 
         Task<bool> OrderExists(Guid id);
         void SaveChanges();
     }
-    public class OrdersRepository : IOrdersRepository
+    public class SalesOrderRepository : ISalesOrderRepository
     {
         private readonly ApplicationDbContext _context;
-        private readonly DbSet<Order> _orders;
+        private readonly DbSet<SalesOrder> _orders;
         private readonly DbSet<OrderItem> _orderItems;
-        public OrdersRepository(ApplicationDbContext context)
+        public SalesOrderRepository(ApplicationDbContext context)
         {
             _context = context;
-            _orders = context.Order;
+            _orders = context.salesOrders;
             _orderItems = context.orderItems;
         }
-        public async Task<IEnumerable<Order>> GetOrders()
+        public async Task<IEnumerable<SalesOrder>> GetOrders()
         {
             return await _orders.Include(x => x.OrderItems).ThenInclude(oi => oi.Product).ToListAsync();
         }
-        public async Task<Order?> GetOrder(Guid id)
+        public async Task<SalesOrder?> GetOrder(Guid id)
         {
             return await _orders.Include(x => x.OrderItems).ThenInclude(oi => oi.Product).FirstOrDefaultAsync(p => p.Id == id);
         }
-        public async Task<Order> AddOrder(Order order)
+        public async Task<SalesOrder> AddOrder(SalesOrder order)
         {
             var entry = await _orders.AddAsync(order);
             await _context.SaveChangesAsync();
             return entry.Entity;
         }
-        public async Task<Order?> UpdateOrder(Guid id, Order order)
+        public async Task<SalesOrder?> UpdateOrder(Guid id, SalesOrder order)
         {
             var existingOrder = await _orders.FindAsync(id);
             if (existingOrder == null)
@@ -58,7 +58,7 @@ namespace Mini_ERP.Repositories
             await _context.SaveChangesAsync();
             return existingOrder;
         }
-        public async Task<Order?> DeleteOrder(Guid id)
+        public async Task<SalesOrder?> DeleteOrder(Guid id)
         {
             var existingOrder = await _orders.FindAsync(id);
             if (existingOrder == null)

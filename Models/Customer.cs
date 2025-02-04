@@ -28,7 +28,6 @@ namespace Mini_ERP.Models
         [StringLength(20)]
         public string PostalCode { get; set; }
 
-        [ForeignKey("orderId")]
-        public virtual List<Order> Orders { get; set; }
+        
     }
 }

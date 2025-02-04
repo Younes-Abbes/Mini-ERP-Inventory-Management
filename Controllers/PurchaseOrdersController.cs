@@ -22,7 +22,7 @@ namespace Mini_ERP.Controllers
         // GET: PurchaseOrders
         public async Task<IActionResult> Index()
         {
-            return View(await _context.PurchaseOrder.ToListAsync());
+            return View(await _context.PurchaseOrders.ToListAsync());
         }
 
         // GET: PurchaseOrders/Details/5
@@ -33,7 +33,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var purchaseOrder = await _context.PurchaseOrder
+            var purchaseOrder = await _context.PurchaseOrders
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (purchaseOrder == null)
             {
@@ -74,7 +74,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var purchaseOrder = await _context.PurchaseOrder.FindAsync(id);
+            var purchaseOrder = await _context.PurchaseOrders.FindAsync(id);
             if (purchaseOrder == null)
             {
                 return NotFound();
@@ -125,7 +125,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var purchaseOrder = await _context.PurchaseOrder
+            var purchaseOrder = await _context.PurchaseOrders
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (purchaseOrder == null)
             {
@@ -140,10 +140,10 @@ namespace Mini_ERP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var purchaseOrder = await _context.PurchaseOrder.FindAsync(id);
+            var purchaseOrder = await _context.PurchaseOrders.FindAsync(id);
             if (purchaseOrder != null)
             {
-                _context.PurchaseOrder.Remove(purchaseOrder);
+                _context.PurchaseOrders.Remove(purchaseOrder);
             }
 
             await _context.SaveChangesAsync();
@@ -152,7 +152,7 @@ namespace Mini_ERP.Controllers
 
         private bool PurchaseOrderExists(Guid id)
         {
-            return _context.PurchaseOrder.Any(e => e.Id == id);
+            return _context.PurchaseOrders.Any(e => e.Id == id);
         }
     }
 }

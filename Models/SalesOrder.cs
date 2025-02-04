@@ -45,8 +45,8 @@ namespace Mini_ERP.Models
         public Shipment Shipment { get; set; }
 
         public virtual List<OrderItem> OrderItems { get; set; }
-        [ForeignKey("supplierId")]
-        public Supplier Supplier { get; set; }
+        [ForeignKey("customerId")]
+        public Customer customer { get; set; }
     }
     
 }
