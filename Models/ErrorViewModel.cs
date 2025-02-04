@@ -1,3 +1,4 @@
+
 namespace Mini_ERP.Models
 {
     public class ErrorViewModel

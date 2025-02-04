@@ -1,4 +1,6 @@
-﻿namespace Mini_ERP.Models.Requests.Create
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace Mini_ERP.Models.Requests.Create
 {
     public class CreateProductRequest
     {
@@ -10,8 +12,8 @@
         public decimal UnitPrice { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public List<Category> Categories { get; set; }
+        public IEnumerable<SelectListItem> Categories { get; set; }
 
-        public virtual Category category { get; set; }
+        public virtual string category { get; set; }
     }
 }

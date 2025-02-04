@@ -1,10 +1,28 @@
-﻿namespace Mini_ERP.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Mini_ERP.Models
 {
+    public enum ShipmentStatus
+    {
+        Pending,
+        Shipped,
+        Delivered,
+        Cancelled
+    }
+
     public class Shipment
     {
+        [Key]
         public Guid Id { get; set; }
+
+        [Required]
         public DateTime ShippedDate { get; set; }
+
+        [Required]
         public DateTime DeliveryDate { get; set; }
-        public string Status { get; set; } //TODO: make this an enum
+
+        [Required]
+        public ShipmentStatus Status { get; set; }
     }
 }

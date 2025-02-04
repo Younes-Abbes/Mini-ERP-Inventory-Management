@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
+using Mini_ERP.Models.Requests.Create;
 using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
@@ -14,10 +15,12 @@ namespace Mini_ERP.Controllers
     public class ProductsController : Controller
     {
         private readonly IProductsRepository _context;
+        private readonly ICategoriesRepository _categoryRepository;
 
-        public ProductsController(IProductsRepository context)
+        public ProductsController(IProductsRepository context, ICategoriesRepository categoriesRepository)
         {
             _context = context;
+            _categoryRepository = categoriesRepository;
         }
 
         // GET: Products
@@ -44,25 +47,52 @@ namespace Mini_ERP.Controllers
         }
 
         // GET: Products/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var categories = await _categoryRepository.GetCategories();
+            var viewModel = new CreateProductRequest
+            {
+                Categories = categories.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }),
+                Name = string.Empty,
+                Description = string.Empty,
+                Quantity = 0,
+                minimumQuantity = 0,
+                UnitPrice = 0,
+                UpdatedAt = DateTime.Now
+            };
+            return View(viewModel);
         }
 
         // POST: Products/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Quantity,minimumQuantity,UnitPrice,CreatedAt,UpdatedAt")] Product product)
+        public async Task<IActionResult> Create(CreateProductRequest createProductRequest)
         {
             if (ModelState.IsValid)
             {
-                product.Id = Guid.NewGuid();
+                var category = await _categoryRepository.GetCategory(Guid.Parse(createProductRequest.category));
+                var product = new Product
+                {
+                    Id = Guid.NewGuid(),
+                    Name = createProductRequest.Name,
+                    Description = createProductRequest.Description,
+                    Quantity = createProductRequest.Quantity,
+                    minimumQuantity = createProductRequest.minimumQuantity,
+                    UnitPrice = createProductRequest.UnitPrice,
+                    UpdatedAt = DateTime.UtcNow,
+                    category = category,
+                    CreatedAt = DateTime.UtcNow,
+                    
+                };
                 await _context.AddProduct(product);
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(createProductRequest);
         }
 
         // GET: Products/Edit/5
