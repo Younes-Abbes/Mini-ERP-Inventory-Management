@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mini_ERP.Models
 {
-    public class PurchaseOrder
+    public class SalesOrder
     {
-
         [Key]
         public Guid Id { get; set; }
 
@@ -46,33 +45,8 @@ namespace Mini_ERP.Models
         public Shipment Shipment { get; set; }
 
         public virtual List<OrderItem> OrderItems { get; set; }
-
-        [ForeignKey("customerId")]
-        public Customer customer { get; set; }
+        [ForeignKey("supplierId")]
+        public Supplier Supplier { get; set; }
     }
-
-        public enum OrderStatus
-        {
-            Pending,
-            Processing,
-            Shipped,
-            Delivered,
-            Cancelled
-        }
-
-        public enum PaymentMethod
-        {
-            CreditCard,
-            PayPal,
-            BankTransfer
-        }
-
-        public enum ShippingMethod
-        {
-            Standard,
-            Express,
-            Overnight
-        }
-        
     
 }
