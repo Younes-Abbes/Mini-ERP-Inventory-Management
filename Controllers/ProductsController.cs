@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
 using Mini_ERP.Models.Requests.Create;
+using Mini_ERP.Models.Requests.Edit;
 using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
@@ -102,37 +103,73 @@ namespace Mini_ERP.Controllers
             {
                 return NotFound();
             }
-
             var product = await _context.GetProduct(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
-            return View(product);
+            var categories = await _categoryRepository.GetCategories();
+            var viewModel = new EditProductRequest
+            {
+                
+                categories = categories.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }),
+                Name = product.Name,
+                Id = product.Id,
+                Description = product.Description,
+                Quantity = product.Quantity,
+                minimumQuantity = product.Quantity,
+                UnitPrice = product.UnitPrice,
+                UpdatedAt = product.UpdatedAt,
+                category = product.category.Id.ToString(),
+                
+            };
+            return View(viewModel);
         }
 
         // POST: Products/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Name,Description,Quantity,minimumQuantity,UnitPrice,CreatedAt,UpdatedAt")] Product product)
+        
+        public async Task<IActionResult> Edit(Guid id, EditProductRequest createProductRequest)
         {
-            if (id != product.Id)
+            if (id != createProductRequest.Id)
             {
                 return NotFound();
             }
-
+            
+            var exists = await _context.ProductExists(id);
+            if (!exists)
+            {
+                return NotFound();
+            }
             if (ModelState.IsValid)
             {
+                
                 try
                 {
-                    await _context.UpdateProduct(id ,product);
+                    var category = await _categoryRepository.GetCategory(Guid.Parse(createProductRequest.category));
+                    var product = new Product
+                    {
+                        Id = id,
+                        Name = createProductRequest.Name,
+                        Description = createProductRequest.Description,
+                        Quantity = createProductRequest.Quantity,
+                        UnitPrice = createProductRequest.UnitPrice,
+                        minimumQuantity = createProductRequest.Quantity,
+                        UpdatedAt = DateTime.UtcNow,
+                        category = category
+                    };
+                    await _context.UpdateProduct(id , product);
                     
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await ProductExists(product.Id))
+                    if (!await ProductExists(createProductRequest.Id))
                     {
                         return NotFound();
                     }
@@ -143,7 +180,7 @@ namespace Mini_ERP.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(createProductRequest);
         }
 
         // GET: Products/Delete/5

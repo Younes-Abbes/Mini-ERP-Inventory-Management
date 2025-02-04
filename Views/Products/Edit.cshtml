@@ -1,4 +1,4 @@
-@model Mini_ERP.Models.Product
+@model Mini_ERP.Models.Requests.Edit.EditProductRequest
 
 @{
     ViewData["Title"] = "Edit";
@@ -38,15 +38,12 @@
                 <input asp-for="UnitPrice" class="form-control" />
                 <span asp-validation-for="UnitPrice" class="text-danger"></span>
             </div>
+            <input type="hidden" asp-for="categories" />
             <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UpdatedAt" class="control-label"></label>
-                <input asp-for="UpdatedAt" class="form-control" />
-                <span asp-validation-for="UpdatedAt" class="text-danger"></span>
+                <label asp-for="category" class="control-label"></label>
+                <select asp-items="Model.categories" asp-for="category" id="Category" name="Category" class="form-select">
+                </select>
+                <span asp-validation-for="category" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

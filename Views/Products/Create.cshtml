@@ -7,77 +7,61 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">Create New Product</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="/Products/Create">
-                        <div class="form-group mb-3">
-                            <label for="Name" class="form-label">Product Name</label>
-                            <input type="text" id="Name" name="Name" class="form-control"
-                                   value="@Model.Name" placeholder="Enter product name">
+                    <form asp-action="Create" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Product Name</label>
+                            <input asp-for="Name" class="form-control" placeholder="Enter product name" />
                             <span asp-validation-for="Name" class="text-danger small"></span>
                         </div>
-
-                        <div class="form-group mb-3">
-                            <label for="Description" class="form-label">Description</label>
-                            <input type="text" id="Description" name="Description" class="form-control"
-                                   value="@Model.Description" placeholder="Enter product description">
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <input asp-for="Description" class="form-control" placeholder="Enter product description" />
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
-
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="Quantity" class="form-label">Quantity</label>
-                                    <input type="number" id="Quantity" name="Quantity" class="form-control"
-                                           value="@Model.Quantity" min="0">
+                                <div class="mb-3">
+                                    <label asp-for="Quantity" class="form-label">Quantity</label>
+                                    <input asp-for="Quantity" class="form-control" min="0" />
                                     <span asp-validation-for="Quantity" class="text-danger small"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="minimumQuantity" class="form-label">Minimum Quantity</label>
-                                    <input type="number" id="minimumQuantity" name="minimumQuantity" class="form-control"
-                                           value="@Model.minimumQuantity" min="0">
+                                <div class="mb-3">
+                                    <label asp-for="minimumQuantity" class="form-label">Minimum Quantity</label>
+                                    <input asp-for="minimumQuantity" class="form-control" min="0" />
                                     <span asp-validation-for="minimumQuantity" class="text-danger small"></span>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="form-group mb-3">
-                            <label for="UnitPrice" class="form-label">Unit Price</label>
+                        <div class="mb-3">
+                            <label asp-for="UnitPrice" class="form-label">Unit Price</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="number" id="UnitPrice" name="UnitPrice" class="form-control"
-                                       value="@Model.UnitPrice" step="0.01" min="0">
+                                <input asp-for="UnitPrice" class="form-control" step="0.01" min="0" />
                             </div>
                             <span asp-validation-for="UnitPrice" class="text-danger small"></span>
                         </div>
                         <input type="hidden" asp-for="Categories" />
-
-                        <div class="row">
-                            
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="Category" class="form-label">Category</label>
-                                    <select asp-items="Model.Categories" asp-for="category" id="Category" name="Category" class="form-select">
-                                    </select>
-                                    <span asp-validation-for="category" class="text-danger small"></span>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <label asp-for="category" class="form-label">Category</label>
+                            <select asp-for="category" class="form-select" asp-items="Model.Categories"></select>
+                            <span asp-validation-for="category" class="text-danger small"></span>
                         </div>
-
-                        <div class="form-group mt-4">
+                        <div class="mt-4">
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="bi bi-plus-circle me-2"></i>Create Product
                             </button>
                         </div>
                     </form>
                 </div>
-                <div class="card-footer bg-light">
-                    <a href="Index" class="btn btn-outline-secondary">
+                <div class="card-footer bg-light text-end">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-2"></i>Back to List
                     </a>
                 </div>
