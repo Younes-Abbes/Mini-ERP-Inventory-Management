@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,6 +15,7 @@ using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
+    [Authorize]
     public class ProductsController : Controller
     {
         private readonly IProductsRepository _context;
@@ -60,7 +62,7 @@ namespace Mini_ERP.Controllers
             {
                 category = string.Empty,
                 IsDeleted = false,
-                Categories = categories.Select(c => new SelectListItem
+                Categories = categories.Where(c => !c.isDeleted).Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
                     Text = c.Name
