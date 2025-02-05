@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Mini_ERP.Models;
+using Mini_ERP.Models.Requests.Create;
 using Mini_ERP.Repositories;
 [Authorize("Admin")]
 public class PurchaseOrdersController : Controller
@@ -32,30 +33,63 @@ public class PurchaseOrdersController : Controller
     public async Task<IActionResult> Create()
     {
         var suppliers = await _supplierRepository.GetSuppliersAsync();
+        var viewModel = new CreatePurchaseOrderRequest
+        {
+            OrderItems = new List<CreateOrderItemRequest> { },
+            BillingAddress = string.Empty,
+            DeliveryDate = DateTime.Now,
+            PaymentMethod = PaymentMethod.CreditCard,
+            ShippingAddress = string.Empty,
+            ShippingMethod = ShippingMethod.Standard,
+            SubTotal = 0,
+            Total = 0,
+            supplierId = string.Empty,
+            suppliers = suppliers.Select(suppliers => new SelectListItem
+            {
+                Value = suppliers.Id.ToString(),
+                Text = suppliers.CompanyName
+            }),
+        };
+        
         var products = await _productRepository.GetProductsAsync();
 
-        ViewBag.Suppliers = suppliers.Select(s => new SelectListItem
-        {
-            Value = s.Id.ToString(), // Use the ID as the value
-            Text = s.CompanyName // Use the name as the display text
-        }).ToList();
+       
         ViewBag.Products = products;
 
-        return View(new PurchaseOrder {
-            OrderItems = new List<OrderItem> { new OrderItem() },
-            supplier = new Supplier()
-
-
-        });
+        return View(viewModel);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(PurchaseOrder order)
+    public async Task<IActionResult> Create(CreatePurchaseOrderRequest createPurchaseOrderRequest)
     {
         if (ModelState.IsValid)
         {
-            order.Id = Guid.NewGuid();
-            await _orderService.AddPurchaseOrderAsync(order);
+            var orderItems = new List<OrderItem>()
+            {
+
+            };
+            var shipment = new Shipment
+            {
+                
+            };
+            var purchaseOrder = new PurchaseOrder
+            {
+                createdAt = DateTime.UtcNow,
+                Id = Guid.NewGuid(),
+                Shipment = shipment,
+                Status = OrderStatus.Pending,
+                OrderItems = orderItems,
+                BillingAddress = createPurchaseOrderRequest.BillingAddress,
+                DeliveryDate = createPurchaseOrderRequest.DeliveryDate,
+                PaymentMethod = createPurchaseOrderRequest.PaymentMethod,
+                ShippingAddress = createPurchaseOrderRequest.ShippingAddress,
+                ShippingMethod = createPurchaseOrderRequest.ShippingMethod,
+                SubTotal = createPurchaseOrderRequest.SubTotal,
+                Total = createPurchaseOrderRequest.Total,
+                supplier = await _supplierRepository.GetSupplier(Guid.Parse(createPurchaseOrderRequest.supplierId)),
+                
+            };
+            
             return RedirectToAction(nameof(Index));
         }
 
@@ -70,7 +104,7 @@ public class PurchaseOrdersController : Controller
         }).ToList();
         ViewBag.Products = products;
 
-        return View(order);
+        return View();
     }
 
     public async Task<IActionResult> Edit(Guid id)

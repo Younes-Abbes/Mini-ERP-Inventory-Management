@@ -73,7 +73,7 @@ namespace Mini_ERP.Controllers
         {
             if (ModelState.IsValid)
             {
-                var product = await _productRepository.GetProduct(Guid.Parse(createInventoryTransactionRequest.Product));
+                var product = await _productRepository.GetByIdAsync(Guid.Parse(createInventoryTransactionRequest.Product));
                 var inventoryTransaction = new InventoryTransaction
                 {
                     Id = Guid.NewGuid(),

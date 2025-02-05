@@ -1,6 +1,6 @@
-﻿namespace Mini_ERP.Models.Requests.Create
+﻿namespace Mini_ERP.Models.Requests.Edit
 {
-    public class CreateOrderRequest
+    public class EditPurchaseOrderRequest
     {
         public DateTime DeliveryDate { get; set; }
         public string Status { get; set; } //TODO: make this an enum
@@ -10,6 +10,8 @@
         public string BillingAddress { get; set; }
         public decimal Total { get; set; }
         public decimal SubTotal { get; set; }
+
+        public Shipment Shipment { get; set; }
         public virtual List<OrderItem> OrderItems { get; set; }
     }
 }

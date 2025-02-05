@@ -5,7 +5,7 @@ using Mini_ERP.Models;
 
 namespace Mini_ERP.Controllers
 {
-    [Authorize("Admin")]
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

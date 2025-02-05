@@ -1,18 +1,21 @@
-@model PurchaseOrder
+@model Mini_ERP.Models.Requests.Create.CreatePurchaseOrderRequest
 
 <h2>Create Sales Order</h2>
 
 <form asp-action="Create" method="post">
     <div class="form-group">
-        <label asp-for="supplier.Id" class="control-label">Supplier</label>
-        <select asp-for="supplier.Id" class="form-control" asp-items="ViewBag.Suppliers"></select>
+        <label asp-for="supplierId" class="control-label">Supplier</label>
+        <select asp-for="supplierId" class="form-control" asp-items="Model.suppliers"></select>
     </div>
-    <input type="hidden" asp-for="createdAt" value="@DateTime.UtcNow" />
-    <input type="text" asp-for="ShippingAddress" required />
-    <input type="text" asp-for="BillingAddress" required />
-    <input type="hidden" asp-for="supplier.Id" value="@Model.supplier.Id" />
-    
-
+    <div class="form-group">
+        <label asp-for="ShippingAddress" class="control-label">Shipping Address</label>
+        <input type="text" asp-for="ShippingAddress" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label asp-for="BillingAddress" class="control-label">Billing Address</label>
+        <input type="text" asp-for="BillingAddress" class="form-control" required />
+    </div>
+    <input type="hidden" asp-for="suppliers" />
     <table id="orderItems" class="table">
         <thead>
             <tr>
@@ -27,18 +30,23 @@
             {
                 <tr>
                     <td>
-                        <select asp-for="OrderItems[i].Product.Id" class="form-control product-select">
+                        <select asp-for="OrderItems[i].ProductId" class="form-control product-select">
                             @foreach (var product in ViewBag.Products)
                             {
                                 <option value="@product.Id" data-price="@product.UnitPrice">@product.Name</option>
+                                
                             }
                         </select>
+                        
                     </td>
                     <td>
                         <input asp-for="OrderItems[i].Quantity" class="form-control quantity" />
                     </td>
                     <td>
-                        <input asp-for="OrderItems[i].Product.UnitPrice" class="form-control price" readonly />
+                        <!-- Make this input readonly and ensure it's the ONLY input for UnitPrice -->
+                        <input asp-for="OrderItems[i].UnitPrice"
+                               class="form-control price"
+                               readonly /> <!-- Add readonly attribute -->
                     </td>
                     <td>
                         <input asp-for="OrderItems[i].Total" class="form-control total" readonly />
@@ -72,25 +80,26 @@
                 const rowCount = tableBody.querySelectorAll('tr').length;
 
                 const newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>
-                        <select name="OrderItems[${rowCount}].Product.Id" class="form-control product-select">
+                        newRow.innerHTML = `
+            <td>
+                <select name="OrderItems[${rowCount}].ProductId" class="form-control product-select">
         @foreach (var product in ViewBag.Products)
         {
-                                        <option value="@product.Id" data-price="@product.UnitPrice">@product.Name</option>
+                            <option value="@product.Id" data-price="@product.UnitPrice">@product.Name</option>
         }
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" name="OrderItems[${rowCount}].Quantity" class="form-control quantity" min="1" value="1" />
-                    </td>
-                    <td>
-                        <input type="text" name="OrderItems[${rowCount}].Product.UnitPrice" class="form-control price" readonly />
-                    </td>
-                    <td>
-                        <input type="text" name="OrderItems[${rowCount}].Total" class="form-control total" readonly />
-                    </td>
-                `;
+                </select>
+            </td>
+            <td>
+                <input name="OrderItems[${rowCount}].Quantity" class="form-control quantity" />
+            </td>
+            <td>
+                <!-- Remove the duplicate input -->
+                <input name="OrderItems[${rowCount}].UnitPrice" class="form-control price" readonly />
+            </td>
+            <td>
+                <input name="OrderItems[${rowCount}].Total" class="form-control total" readonly />
+            </td>
+        `;
 
                 tableBody.appendChild(newRow);
 
@@ -109,17 +118,19 @@
                 const totalInput = row.querySelector('.total');
 
                 // Update price and total when product is selected
-                productSelect.addEventListener('change', function () {
-                    const selectedOption = this.options[this.selectedIndex];
-                    const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+            productSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
 
-                    priceInput.value = price.toFixed(2);
+            // Update the UnitPrice input (now bound to the model)
+            priceInput.value = price.toFixed(2);
 
-                    const quantity = parseFloat(quantityInput.value) || 1;
-                    totalInput.value = (quantity * price).toFixed(2);
+            // Calculate total
+            const quantity = parseFloat(quantityInput.value) || 1;
+            totalInput.value = (quantity * price).toFixed(2);
 
-                    updateOrderTotal();
-                });
+            updateOrderTotal();
+            });
 
                 // Update total when quantity changes
                 quantityInput.addEventListener('input', function () {

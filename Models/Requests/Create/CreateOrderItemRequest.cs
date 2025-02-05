@@ -4,8 +4,8 @@
     {
         public int Quantity { get; set; }
         public decimal Total { get; set; }
+        public int UnitPrice { get; set; } = 0;
 
-        public List<Product> Products { get; set; }
-        public virtual Product Product { get; set; }
+        public Guid ProductId { get; set; }
     }
 }
