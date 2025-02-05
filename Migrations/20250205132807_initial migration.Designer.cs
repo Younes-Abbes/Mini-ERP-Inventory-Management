@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mini_ERP.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250205003800_aa")]
-    partial class aa
+    [Migration("20250205132807_initial migration")]
+    partial class initialmigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,9 @@ namespace Mini_ERP.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("isDeleted")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -100,8 +103,8 @@ namespace Mini_ERP.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
@@ -161,6 +164,9 @@ namespace Mini_ERP.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -299,10 +305,10 @@ namespace Mini_ERP.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("DeliveryDate")
+                    b.Property<DateTime?>("DeliveryDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("ShippedDate")
+                    b.Property<DateTime?>("ShippedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
@@ -355,7 +361,7 @@ namespace Mini_ERP.Migrations
             modelBuilder.Entity("Mini_ERP.Models.InventoryTransaction", b =>
                 {
                     b.HasOne("Mini_ERP.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("InventoryTransactions")
                         .HasForeignKey("ProductId");
 
                     b.Navigation("Product");
@@ -427,6 +433,11 @@ namespace Mini_ERP.Migrations
                     b.Navigation("Shipment");
 
                     b.Navigation("customer");
+                });
+
+            modelBuilder.Entity("Mini_ERP.Models.Product", b =>
+                {
+                    b.Navigation("InventoryTransactions");
                 });
 
             modelBuilder.Entity("Mini_ERP.Models.PurchaseOrder", b =>

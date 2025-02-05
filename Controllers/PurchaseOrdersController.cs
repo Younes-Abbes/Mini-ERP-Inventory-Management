@@ -64,14 +64,22 @@ public class PurchaseOrdersController : Controller
     {
         if (ModelState.IsValid)
         {
-            var orderItems = new List<OrderItem>()
+            var orderItems = (await Task.WhenAll(createPurchaseOrderRequest.OrderItems.Select(async x => new OrderItem
             {
+                Id = Guid.NewGuid(),
+                Product = await _productRepository.GetByIdAsync(x.ProductId),
+                Quantity = x.Quantity,
+                Total = x.Total
+            }))).ToList();
 
-            };
             var shipment = new Shipment
             {
-                
+               DeliveryDate = null,
+               ShippedDate = null,
+                Id = Guid.NewGuid(),
+                Status = ShipmentStatus.Pending
             };
+
             var purchaseOrder = new PurchaseOrder
             {
                 createdAt = DateTime.UtcNow,
@@ -87,24 +95,23 @@ public class PurchaseOrdersController : Controller
                 SubTotal = createPurchaseOrderRequest.SubTotal,
                 Total = createPurchaseOrderRequest.Total,
                 supplier = await _supplierRepository.GetSupplier(Guid.Parse(createPurchaseOrderRequest.supplierId)),
-                
             };
-            
+
+            await _orderService.AddPurchaseOrderAsync(purchaseOrder);
             return RedirectToAction(nameof(Index));
         }
 
         var suppliers = await _supplierRepository.GetSuppliersAsync();
         var products = await _productRepository.GetProductsAsync();
 
-        
         ViewBag.Suppliers = suppliers.Select(s => new SelectListItem
         {
-            Value = s.Id.ToString(), // Use the ID as the value
-            Text = s.CompanyName // Use the name as the display text
+            Value = s.Id.ToString(),
+            Text = s.CompanyName
         }).ToList();
         ViewBag.Products = products;
 
-        return View();
+        return View(createPurchaseOrderRequest);
     }
 
     public async Task<IActionResult> Edit(Guid id)

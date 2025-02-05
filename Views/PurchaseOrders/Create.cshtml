@@ -42,12 +42,7 @@
                     <td>
                         <input asp-for="OrderItems[i].Quantity" class="form-control quantity" />
                     </td>
-                    <td>
-                        <!-- Make this input readonly and ensure it's the ONLY input for UnitPrice -->
-                        <input asp-for="OrderItems[i].UnitPrice"
-                               class="form-control price"
-                               readonly /> <!-- Add readonly attribute -->
-                    </td>
+                    
                     <td>
                         <input asp-for="OrderItems[i].Total" class="form-control total" readonly />
                     </td>
@@ -92,7 +87,7 @@
             <td>
                 <input name="OrderItems[${rowCount}].Quantity" class="form-control quantity" />
             </td>
-            <td>
+            <td type="hidden">
                 <!-- Remove the duplicate input -->
                 <input name="OrderItems[${rowCount}].UnitPrice" class="form-control price" readonly />
             </td>
