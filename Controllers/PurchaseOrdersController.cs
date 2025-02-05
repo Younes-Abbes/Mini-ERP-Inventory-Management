@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Mini_ERP.Models;
 using Mini_ERP.Models.Requests.Create;
+using Mini_ERP.Models.Requests.Edit;
 using Mini_ERP.Repositories;
 [Authorize("Admin")]
 public class PurchaseOrdersController : Controller
@@ -123,24 +124,62 @@ public class PurchaseOrdersController : Controller
         }
 
         var suppliers = await _supplierRepository.GetSuppliersAsync();
+        var purchaseOrder = await _orderService.GetPurchaseOrderByIdAsync(id);
+        if (purchaseOrder == null) {
+            return NotFound();
+        }
+        purchaseOrder.OrderItems = purchaseOrder.OrderItems;
+        purchaseOrder.BillingAddress = purchaseOrder.BillingAddress;
+        purchaseOrder.DeliveryDate = purchaseOrder.DeliveryDate;
+        purchaseOrder.PaymentMethod = purchaseOrder.PaymentMethod;
+        purchaseOrder.ShippingAddress = purchaseOrder.ShippingAddress;
+        purchaseOrder.ShippingMethod = purchaseOrder.ShippingMethod;
+        purchaseOrder.SubTotal = purchaseOrder.SubTotal;
+        purchaseOrder.Total = purchaseOrder.Total;
+        purchaseOrder.supplier = purchaseOrder.supplier;
+        await _orderService.UpdatePurchaseOrderAsync( purchaseOrder);
+
         var products = await _productRepository.GetProductsAsync();
 
         ViewBag.Suppliers = suppliers.Select(s => new SelectListItem
         {
-            Value = s.Id.ToString(), // Use the ID as the value
-            Text = s.CompanyName // Use the name as the display text
+            Value = s.Id.ToString(),
+            Text = s.CompanyName
         }).ToList();
-        ViewBag.Products = products;
 
-        return View(order);
+        return View();
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(PurchaseOrder order)
+    public async Task<IActionResult> Edit(Guid id, CreatePurchaseOrderRequest createPurchaseOrderRequest)
     {
         if (ModelState.IsValid)
         {
-            await _orderService.UpdatePurchaseOrderAsync(order);
+            var orderItems = (await Task.WhenAll(createPurchaseOrderRequest.OrderItems.Select(async x => new OrderItem
+            {
+                Id = Guid.NewGuid(),
+                Product = await _productRepository.GetByIdAsync(x.ProductId),
+                Quantity = x.Quantity,
+                Total = x.Total
+            }))).ToList();
+
+            var purchaseOrder = await _orderService.GetPurchaseOrderByIdAsync(id);
+            if (purchaseOrder == null)
+            {
+                return NotFound();
+            }
+
+            purchaseOrder.OrderItems = orderItems;
+            purchaseOrder.BillingAddress = createPurchaseOrderRequest.BillingAddress;
+            purchaseOrder.DeliveryDate = createPurchaseOrderRequest.DeliveryDate;
+            purchaseOrder.PaymentMethod = createPurchaseOrderRequest.PaymentMethod;
+            purchaseOrder.ShippingAddress = createPurchaseOrderRequest.ShippingAddress;
+            purchaseOrder.ShippingMethod = createPurchaseOrderRequest.ShippingMethod;
+            purchaseOrder.SubTotal = createPurchaseOrderRequest.SubTotal;
+            purchaseOrder.Total = createPurchaseOrderRequest.Total;
+            purchaseOrder.supplier = await _supplierRepository.GetSupplier(Guid.Parse(createPurchaseOrderRequest.supplierId));
+
+            await _orderService.UpdatePurchaseOrderAsync(purchaseOrder);
             return RedirectToAction(nameof(Index));
         }
 
@@ -149,12 +188,12 @@ public class PurchaseOrdersController : Controller
 
         ViewBag.Suppliers = suppliers.Select(s => new SelectListItem
         {
-            Value = s.Id.ToString(), // Use the ID as the value
-            Text = s.CompanyName // Use the name as the display text
+            Value = s.Id.ToString(),
+            Text = s.CompanyName
         }).ToList();
         ViewBag.Products = products;
 
-        return View(order);
+        return View(createPurchaseOrderRequest);
     }
 
     public async Task<IActionResult> Delete(Guid id)

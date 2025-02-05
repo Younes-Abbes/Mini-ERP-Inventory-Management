@@ -1,65 +1,127 @@
 @model Mini_ERP.Models.Requests.Create.CreatePurchaseOrderRequest
 
-<h2>Create Sales Order</h2>
+@{
+    ViewData["Title"] = "Create Sales Order";
+}
 
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label asp-for="supplierId" class="control-label">Supplier</label>
-        <select asp-for="supplierId" class="form-control" asp-items="Model.suppliers"></select>
-    </div>
-    <div class="form-group">
-        <label asp-for="ShippingAddress" class="control-label">Shipping Address</label>
-        <input type="text" asp-for="ShippingAddress" class="form-control" required />
-    </div>
-    <div class="form-group">
-        <label asp-for="BillingAddress" class="control-label">Billing Address</label>
-        <input type="text" asp-for="BillingAddress" class="form-control" required />
-    </div>
-    <input type="hidden" asp-for="suppliers" />
-    <table id="orderItems" class="table">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (int i = 0; i < Model.OrderItems.Count; i++)
-            {
-                <tr>
-                    <td>
-                        <select asp-for="OrderItems[i].ProductId" class="form-control product-select">
-                            @foreach (var product in ViewBag.Products)
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">
+                <i class="bi bi-cart-plus"></i> Create Sales Order
+            </h3>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="Create" method="post" class="needs-validation" novalidate>
+                <!-- Supplier Field -->
+                <div class="mb-4">
+                    <label asp-for="supplierId" class="form-label fw-bold">
+                        <i class="bi bi-building"></i> Supplier
+                    </label>
+                    <select asp-for="supplierId" class="form-control form-control-lg" asp-items="Model.suppliers"></select>
+                </div>
+
+                <!-- Shipping Address Field -->
+                <div class="mb-4">
+                    <label asp-for="ShippingAddress" class="form-label fw-bold">
+                        <i class="bi bi-truck"></i> Shipping Address
+                    </label>
+                    <input type="text" asp-for="ShippingAddress" class="form-control form-control-lg" placeholder="Enter shipping address" required />
+                    <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
+                </div>
+
+                <!-- Billing Address Field -->
+                <div class="mb-4">
+                    <label asp-for="BillingAddress" class="form-label fw-bold">
+                        <i class="bi bi-receipt"></i> Billing Address
+                    </label>
+                    <input type="text" asp-for="BillingAddress" class="form-control form-control-lg" placeholder="Enter billing address" required />
+                    <span asp-validation-for="BillingAddress" class="text-danger small"></span>
+                </div>
+
+                <!-- Hidden field (if needed) -->
+                <input type="hidden" asp-for="suppliers" />
+
+                <!-- Order Items Table -->
+                <div class="table-responsive mb-4">
+                    <table id="orderItems" class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="ps-4">Product</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.OrderItems.Count; i++)
                             {
-                                <option value="@product.Id" data-price="@product.UnitPrice">@product.Name</option>
-                                
+                                <tr>
+                                    <td>
+                                        <select asp-for="OrderItems[i].ProductId" class="form-control form-control-lg product-select">
+                                            @foreach (var product in ViewBag.Products)
+                                            {
+                                                <option value="@product.Id" data-price="@product.UnitPrice">@product.Name</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input asp-for="OrderItems[i].Quantity" class="form-control form-control-lg quantity" placeholder="Qty" />
+                                        <span asp-validation-for="OrderItems[i].Quantity" class="text-danger small"></span>
+                                    </td>
+                                    
+                                    <td>
+                                        <input asp-for="OrderItems[i].Total" class="form-control form-control-lg total" readonly placeholder="Total" />
+                                    </td>
+                                </tr>
                             }
-                        </select>
-                        
-                    </td>
-                    <td>
-                        <input asp-for="OrderItems[i].Quantity" class="form-control quantity" />
-                    </td>
-                    
-                    <td>
-                        <input asp-for="OrderItems[i].Total" class="form-control total" readonly />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                        </tbody>
+                    </table>
+                </div>
 
-    <button type="button" id="addItem" class="btn btn-secondary">Add Item</button>
+                <!-- Button to add new order item -->
+                <div class="d-flex justify-content-start">
+                    <button type="button" id="addItem" class="btn btn-secondary">
+                        <i class="bi bi-plus-circle"></i> Add Item
+                    </button>
+                </div>
 
-    <div class="form-group">
-        <label>Order Total</label>
-        <input id="orderTotal" class="form-control" asp-for="Total" readonly />
+                <!-- Order Total Field -->
+                <div class="mb-4 mt-4">
+                    <label class="form-label fw-bold">Order Total</label>
+                    <input id="orderTotal" class="form-control form-control-lg" asp-for="Total" readonly />
+                </div>
+
+                <!-- Form Buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="bi bi-arrow-left"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-save"></i> Save Order
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
-    <button type="submit" class="btn btn-primary">Save Order</button>
-</form>
+@section Styles {
+    <style>
+        .card {
+            border-radius: 1rem;
+        }
+
+        .card-header {
+            border-radius: 1rem 1rem 0 0 !important;
+        }
+
+        .form-control-lg {
+            border-radius: 0.5rem;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
@@ -69,39 +131,38 @@
                 attachEventListeners(row);
             });
 
-            // Add new row for order items
+            // Add new row for order items when clicking the Add Item button
             document.getElementById('addItem').addEventListener('click', function () {
                 const tableBody = document.querySelector('#orderItems tbody');
                 const rowCount = tableBody.querySelectorAll('tr').length;
 
                 const newRow = document.createElement('tr');
-                        newRow.innerHTML = `
-            <td>
-                <select name="OrderItems[${rowCount}].ProductId" class="form-control product-select">
+                newRow.innerHTML = `
+                    <td>
+                        <select name="OrderItems[${rowCount}].ProductId" class="form-control form-control-lg product-select">
         @foreach (var product in ViewBag.Products)
         {
-                            <option value="@product.Id" data-price="@product.UnitPrice">@product.Name</option>
+                                    <option value="@product.Id" data-price="@product.UnitPrice">@product.Name</option>
         }
-                </select>
-            </td>
-            <td>
-                <input name="OrderItems[${rowCount}].Quantity" class="form-control quantity" />
-            </td>
-            <td type="hidden">
-                <!-- Remove the duplicate input -->
-                <input name="OrderItems[${rowCount}].UnitPrice" class="form-control price" readonly />
-            </td>
-            <td>
-                <input name="OrderItems[${rowCount}].Total" class="form-control total" readonly />
-            </td>
-        `;
+                        </select>
+                    </td>
+                    <td>
+                        <input name="OrderItems[${rowCount}].Quantity" class="form-control form-control-lg quantity" placeholder="Qty" />
+                    </td>
+                    <td>
+                        <input name="OrderItems[${rowCount}].UnitPrice" class="form-control form-control-lg price" readonly placeholder="Price" />
+                    </td>
+                    <td>
+                        <input name="OrderItems[${rowCount}].Total" class="form-control form-control-lg total" readonly placeholder="Total" />
+                    </td>
+                `;
 
                 tableBody.appendChild(newRow);
 
                 // Attach event listeners to the new row
                 attachEventListeners(newRow);
 
-                // Trigger change event to update price
+                // Trigger change event to update the price
                 const productSelect = newRow.querySelector('.product-select');
                 productSelect.dispatchEvent(new Event('change'));
             });
@@ -112,22 +173,19 @@
                 const priceInput = row.querySelector('.price');
                 const totalInput = row.querySelector('.total');
 
-                // Update price and total when product is selected
-            productSelect.addEventListener('change', function () {
-            const selectedOption = this.options[this.selectedIndex];
-            const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+                // Update price and total when a product is selected
+                productSelect.addEventListener('change', function () {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+                    priceInput.value = price.toFixed(2);
 
-            // Update the UnitPrice input (now bound to the model)
-            priceInput.value = price.toFixed(2);
+                    const quantity = parseFloat(quantityInput.value) || 1;
+                    totalInput.value = (quantity * price).toFixed(2);
 
-            // Calculate total
-            const quantity = parseFloat(quantityInput.value) || 1;
-            totalInput.value = (quantity * price).toFixed(2);
+                    updateOrderTotal();
+                });
 
-            updateOrderTotal();
-            });
-
-                // Update total when quantity changes
+                // Update total when the quantity changes
                 quantityInput.addEventListener('input', function () {
                     const price = parseFloat(priceInput.value) || 0;
                     const quantity = parseFloat(this.value) || 1;
@@ -142,9 +200,9 @@
                 document.querySelectorAll('.total').forEach(totalInput => {
                     orderTotal += parseFloat(totalInput.value) || 0;
                 });
-
                 document.getElementById('orderTotal').value = orderTotal.toFixed(2);
             }
         });
     </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 }
