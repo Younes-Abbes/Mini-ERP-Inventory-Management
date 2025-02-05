@@ -29,10 +29,13 @@ namespace Mini_ERP.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Quantity { get; set; }
 
-
         public string? Notes { get; set; }
-        public Guid? ReferenceId { get; set; }  // For linking to orders/purchases
+        public Guid? ReferenceId { get; set; }
 
+        // Add nullable foreign key
+        public Guid? ProductId { get; set; }  // This is the new line
+
+        [ForeignKey("ProductId")]
         public virtual Product? Product { get; set; }
     }
 }

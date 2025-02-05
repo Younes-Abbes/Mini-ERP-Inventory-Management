@@ -49,9 +49,6 @@ namespace Mini_ERP.Controllers
             return View();
         }
 
-        // POST: Categories/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Description")] Category category)
@@ -149,6 +146,13 @@ namespace Mini_ERP.Controllers
         private async Task<bool> CategoryExists(Guid id)
         {
             return await _context.CategoryExists(id);
+        }
+        [HttpGet]
+        [ActionName("restore")]
+        public async Task<IActionResult> restoreCategory(Guid id)
+        {
+            await _context.RestoreCategory(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

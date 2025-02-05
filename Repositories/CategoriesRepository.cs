@@ -11,6 +11,7 @@ namespace Mini_ERP.Repositories
         Task<Category> AddCategory(Category category);
         Task<Category?> UpdateCategory(Guid id, Category category);
         Task<Category?> DeleteCategory(Guid id);
+        Task<Category?> RestoreCategory(Guid id);
 
         Task<bool> CategoryExists(Guid id);
         void saveChanges();
@@ -57,8 +58,9 @@ namespace Mini_ERP.Repositories
             {
                 return null;
             }
-            _context.products.RemoveRange(_context.products.Where(p => p.category.Id == id));
-            _categories.Remove(existingCategory);
+            existingCategory.isDeleted = true;
+            _context.products.Where(p => p.category.Id == id).ToList().ForEach(p => p.IsDeleted = true);
+
             await _context.SaveChangesAsync();
             return existingCategory;
         }
@@ -70,6 +72,13 @@ namespace Mini_ERP.Repositories
         public Task<bool> CategoryExists(Guid id)
         {
             return _categories.AnyAsync(e => e.Id == id);
+        }
+
+        public async Task<Category?> RestoreCategory(Guid id)
+        {
+            var category = await GetCategory(id);
+            category.isDeleted = false; 
+            return await UpdateCategory(id, category);
         }
     }
 }

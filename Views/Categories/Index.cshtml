@@ -34,20 +34,49 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
-                                <td class="ps-4 fw-bold">@Html.DisplayFor(modelItem => item.Name)</td>
-                                <td class="d-none d-md-table-cell">@Html.DisplayFor(modelItem => item.Description)</td>
+                            <tr class="@(item.isDeleted ? "table-secondary" : "")">
+                                <td class="ps-4 fw-bold">
+                                    @if (item.isDeleted)
+                                    {
+                                        <span class="text-decoration-line-through text-muted">@Html.DisplayFor(modelItem => item.Name)</span>
+                                    }
+                                    else
+                                    {
+                                        @Html.DisplayFor(modelItem => item.Name)
+                                    }
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    @if (item.isDeleted)
+                                    {
+                                        <span class="text-muted">@Html.DisplayFor(modelItem => item.Description)</span>
+                                    }
+                                    else
+                                    {
+                                        @Html.DisplayFor(modelItem => item.Description)
+                                    }
+                                </td>
                                 <td class="pe-4 text-end">
                                     <div class="btn-group" role="group">
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-info-circle"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        @if (!item.isDeleted)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            <a asp-controller="categories" asp-action="delete" asp-route-id="@item.Id"
+                                               class="btn btn-sm @(item.isDeleted ? "btn-warning" : "btn-outline-danger")">
+                                                <i class="bi @(item.isDeleted ? "bi-arrow-counterclockwise" : "bi-trash")"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="categories" asp-action="restore" asp-route-id="@item.Id"
+                                               class="btn btn-sm @(item.isDeleted ? "btn-warning" : "btn-outline-danger")">
+                                                <i class="bi @(item.isDeleted ? "bi-arrow-counterclockwise" : "bi-trash")"></i>
+                                            </a>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -75,6 +104,17 @@
         .table-hover tbody tr:hover {
             background-color: #f8f9fa;
         }
+        .text-decoration-line-through {
+        text-decoration: line-through;
+    }
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+    .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+    }
     </style>
 }
 

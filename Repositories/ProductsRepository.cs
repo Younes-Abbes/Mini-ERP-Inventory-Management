@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
 
@@ -11,6 +12,7 @@ namespace Mini_ERP.Repositories
         Task<Product> AddProduct(Product product);
         Task<Product?> UpdateProduct(Guid id, Product product);
         Task<Product?> DeleteProduct(Guid id);
+        Task<Product?> RestoreProduct(Guid id); 
         Task<IEnumerable<Product>> GetProductsByName(string name);
 
         Task<bool> ProductExists(Guid id);
@@ -64,7 +66,8 @@ namespace Mini_ERP.Repositories
             {
                 return null;
             }
-            _products.Remove(existingProduct);
+            var product = await _products.FirstOrDefaultAsync(p => p.Id == id);
+            product.IsDeleted = true;
             await _context.SaveChangesAsync();
             return existingProduct;
         }
@@ -82,6 +85,14 @@ namespace Mini_ERP.Repositories
         {
             
             return await _products.Include(x => x.category).Where(p => p.Name.Contains(name) || p.Description.Contains(name)).ToListAsync();
+        }
+        
+        public async Task<Product?> RestoreProduct(Guid id)
+        {
+            var product = await GetProduct(id);
+            product.IsDeleted = false;
+            await UpdateProduct(id, product);
+            return product;
         }
     }
 }

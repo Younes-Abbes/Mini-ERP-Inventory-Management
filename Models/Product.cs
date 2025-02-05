@@ -33,5 +33,11 @@ namespace Mini_ERP.Models
 
         [Required]
         public virtual Category category { get; set; }
+
+        [Required]
+        public bool IsDeleted { get; set; } = false;
+
+        public virtual ICollection<InventoryTransaction>? InventoryTransactions { get; set; }
+
     }
 }

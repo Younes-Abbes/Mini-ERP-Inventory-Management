@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mini_ERP.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250204190738_initialMigration")]
-    partial class initialMigration
+    [Migration("20250204233941_isdeleted = false")]
+    partial class isdeletedfalse
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,9 @@ namespace Mini_ERP.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("isDeleted")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -161,6 +164,9 @@ namespace Mini_ERP.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -355,7 +361,7 @@ namespace Mini_ERP.Migrations
             modelBuilder.Entity("Mini_ERP.Models.InventoryTransaction", b =>
                 {
                     b.HasOne("Mini_ERP.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("InventoryTransactions")
                         .HasForeignKey("ProductId");
 
                     b.Navigation("Product");
@@ -427,6 +433,11 @@ namespace Mini_ERP.Migrations
                     b.Navigation("Shipment");
 
                     b.Navigation("customer");
+                });
+
+            modelBuilder.Entity("Mini_ERP.Models.Product", b =>
+                {
+                    b.Navigation("InventoryTransactions");
                 });
 
             modelBuilder.Entity("Mini_ERP.Models.PurchaseOrder", b =>

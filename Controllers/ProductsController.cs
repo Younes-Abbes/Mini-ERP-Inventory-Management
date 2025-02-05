@@ -58,6 +58,8 @@ namespace Mini_ERP.Controllers
             var categories = await _categoryRepository.GetCategories();
             var viewModel = new CreateProductRequest
             {
+                category = string.Empty,
+                IsDeleted = false,
                 Categories = categories.Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
@@ -81,6 +83,7 @@ namespace Mini_ERP.Controllers
                 var product = new Product
                 {
                     Id = Guid.NewGuid(),
+                    IsDeleted = false,
                     Name = createProductRequest.Name,
                     Description = createProductRequest.Description,
                     Quantity = createProductRequest.Quantity,
@@ -126,7 +129,7 @@ namespace Mini_ERP.Controllers
             var categories = await _categoryRepository.GetCategories();
             var viewModel = new EditProductRequest
             {
-                
+                IsDeleted = product.IsDeleted,
                 categories = categories.Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
@@ -172,8 +175,9 @@ namespace Mini_ERP.Controllers
                     product.minimumQuantity = createProductRequest.minimumQuantity;
                     product.UpdatedAt = DateTime.UtcNow;
                     product.category = category;
-                        
-                    
+                    product.IsDeleted = createProductRequest.IsDeleted;
+
+
                     var result = await _context.UpdateProduct(id , product);
                     if (result != null)
                     {
@@ -252,5 +256,11 @@ namespace Mini_ERP.Controllers
         {
             return await _context.ProductExists(id);
         }
+        [ActionName("restore")]
+        public async Task<IActionResult> RestoreProduct(Guid id)
+        {
+            await _context.RestoreProduct(id);
+            return RedirectToAction(nameof(Index));
+        }   
     }
 }

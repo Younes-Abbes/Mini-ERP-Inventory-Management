@@ -18,5 +18,7 @@ namespace Mini_ERP.Models.Requests.Edit
         public IEnumerable<SelectListItem> categories { get; set; }
 
         public virtual string category { get; set; }
+
+        public bool IsDeleted { get; set; }
     }
 }

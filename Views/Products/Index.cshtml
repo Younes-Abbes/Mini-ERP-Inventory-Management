@@ -49,9 +49,27 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
-                                <td class="fw-bold">@Html.DisplayFor(modelItem => item.Name)</td>
-                                <td class="d-none d-lg-table-cell">@Html.DisplayFor(modelItem => item.Description)</td>
+                            <tr class="@(item.IsDeleted ? "table-secondary" : "")">
+                                <td class="fw-bold">
+                                    @if (item.IsDeleted)
+                                    {
+                                        <span class="text-decoration-line-through text-muted">@Html.DisplayFor(modelItem => item.Name)</span>
+                                    }
+                                    else
+                                    {
+                                        @Html.DisplayFor(modelItem => item.Name)
+                                    }
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    @if (item.IsDeleted)
+                                    {
+                                        <span class="text-muted">@Html.DisplayFor(modelItem => item.Description)</span>
+                                    }
+                                    else
+                                    {
+                                        @Html.DisplayFor(modelItem => item.Description)
+                                    }
+                                </td>
                                 <td>
                                     <span class="badge @(item.Quantity < item.minimumQuantity ? "bg-danger" : "bg-success") fs-6">
                                         @Html.DisplayFor(modelItem => item.Quantity)
@@ -63,15 +81,24 @@
                                 <td class="d-none d-xl-table-cell">@item.UpdatedAt.ToString("MMM dd, yyyy")</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-info-circle"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        @if (!item.IsDeleted)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="restore" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                            </a>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -79,8 +106,6 @@
                     </tbody>
                 </table>
             </div>
-
-            
         </div>
     </div>
 </div>
@@ -103,6 +128,20 @@
             padding: 0.5em 0.75em;
             min-width: 3.5rem;
         }
+
+        .text-decoration-line-through {
+            text-decoration: line-through;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+
+            .btn-warning:hover {
+                background-color: #e0a800;
+                border-color: #d39e00;
+            }
     </style>
 }
 

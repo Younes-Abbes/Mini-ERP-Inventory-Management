@@ -13,5 +13,7 @@ namespace Mini_ERP.Models
 
         [StringLength(500)]
         public string Description { get; set; }
+        [Required]
+        public bool isDeleted { get; set; } = false;
     }
 }

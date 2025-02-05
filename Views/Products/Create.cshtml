@@ -48,6 +48,7 @@
                             <span asp-validation-for="UnitPrice" class="text-danger small"></span>
                         </div>
                         <input type="hidden" asp-for="Categories" />
+                        <input type="hidden" asp-for="IsDeleted" />
                         <div class="mb-3">
                             <label asp-for="category" class="form-label">Category</label>
                             <select asp-for="category" class="form-select" asp-items="Model.Categories"></select>
