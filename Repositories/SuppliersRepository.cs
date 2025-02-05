@@ -8,6 +8,7 @@ namespace Mini_ERP.Repositories
     {
         Task<IEnumerable<Supplier>> GetSuppliers();
         Task<Supplier?> GetSupplier(Guid id);
+        Task<IEnumerable<Supplier>> GetSuppliersAsync(string searchTerm = null);
         Task<Supplier> AddSupplier(Supplier supplier);
         Task<Supplier?> UpdateSupplier(Guid id, Supplier supplier);
         Task<Supplier?> DeleteSupplier(Guid id);
@@ -31,6 +32,17 @@ namespace Mini_ERP.Repositories
         public async Task<Supplier?> GetSupplier(Guid id)
         {
             return await _suppliers.FirstOrDefaultAsync(s => s.Id == id);
+        }
+        public async Task<IEnumerable<Supplier>> GetSuppliersAsync(string searchTerm = null)
+        {
+            var query = _context.suppliers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(s => s.CompanyName.Contains(searchTerm));
+            }
+
+            return await query.ToListAsync();
         }
         public async Task<Supplier> AddSupplier(Supplier supplier)
         {

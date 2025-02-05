@@ -1,74 +1,178 @@
-@model Mini_ERP.Models.SalesOrder
+@model SalesOrder
 
-@{
-    ViewData["Title"] = "Edit";
-}
+<h2>Edit Sales Order</h2>
 
-<h1>Edit</h1>
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
 
-<h4>SalesOrder</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="createdAt" class="control-label"></label>
-                <input asp-for="createdAt" class="form-control" />
-                <span asp-validation-for="createdAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DeliveryDate" class="control-label"></label>
-                <input asp-for="DeliveryDate" class="form-control" />
-                <span asp-validation-for="DeliveryDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Status" class="control-label"></label>
-                <select asp-for="Status" class="form-control"></select>
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PaymentMethod" class="control-label"></label>
-                <select asp-for="PaymentMethod" class="form-control"></select>
-                <span asp-validation-for="PaymentMethod" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ShippingMethod" class="control-label"></label>
-                <select asp-for="ShippingMethod" class="form-control"></select>
-                <span asp-validation-for="ShippingMethod" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ShippingAddress" class="control-label"></label>
-                <input asp-for="ShippingAddress" class="form-control" />
-                <span asp-validation-for="ShippingAddress" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="BillingAddress" class="control-label"></label>
-                <input asp-for="BillingAddress" class="form-control" />
-                <span asp-validation-for="BillingAddress" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Total" class="control-label"></label>
-                <input asp-for="Total" class="form-control" />
-                <span asp-validation-for="Total" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SubTotal" class="control-label"></label>
-                <input asp-for="SubTotal" class="form-control" />
-                <span asp-validation-for="SubTotal" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="form-group">
+        <label asp-for="customer.Id" class="control-label">Customer</label>
+        <select asp-for="customer.Id" class="form-control" asp-items="ViewBag.Customers"></select>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <table id="orderItems" class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.OrderItems.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <select asp-for="OrderItems[i].Product.Id" class="form-control product-select">
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.Name</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input asp-for="OrderItems[i].Quantity" class="form-control quantity" />
+                    </td>
+                    <td>
+                        <input asp-for="OrderItems[i].Product.UnitPrice" class="form-control price" readonly />
+                    </td>
+                    <td>
+                        <input asp-for="OrderItems[i].Total" class="form-control total" readonly />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="button" id="addItem" class="btn btn-secondary">Add Item</button>
+
+    <div class="form-group">
+        <label>Order Total</label>
+        <input id="orderTotal" class="form-control" readonly />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // JavaScript for dynamic behavior (same as Create.cshtml)
+        document.getElementById('addItem').addEventListener('click', function () {
+            const tableBody = document.querySelector('#orderItems tbody');
+            const rowCount = tableBody.querySelectorAll('tr').length;
+
+            const newRow = `
+                <tr>
+                    <td>
+                        <select name="OrderItems[${rowCount}].ProductId" class="form-control product-select">
+        @foreach (var product in ViewBag.Products)
+        {
+                                        <option value="@product.ProductId">@product.Name</option>
+        }
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="OrderItems[${rowCount}].Quantity" class="form-control quantity" />
+                    </td>
+                    <td>
+                        <input type="text" name="OrderItems[${rowCount}].Price" class="form-control price" readonly />
+                    </td>
+                    <td>
+                        <input type="text" name="OrderItems[${rowCount}].Total" class="form-control total" readonly />
+                    </td>
+                </tr>
+            `;
+
+            tableBody.insertAdjacentHTML('beforeend', newRow);
+
+            // Attach event listeners to the new row
+            const newRowElement = tableBody.lastElementChild;
+            attachEventListeners(newRowElement);
+        });
+
+        // Attach event listeners to a row
+        function attachEventListeners(row) {
+            const productSelect = row.querySelector('.product-select');
+            const quantityInput = row.querySelector('.quantity');
+            const priceInput = row.querySelector('.price');
+            const totalInput = row.querySelector('.total');
+
+            // Update price and total when product is selected
+            productSelect.addEventListener('change', function () {
+                const productId = this.value;
+                fetch(`/api/Product/GetPrice/${productId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        priceInput.value = data.price;
+                        calculateTotal(quantityInput, priceInput, totalInput);
+                        updateOrderTotal();
+                    });
+            });
+
+            // Update total when quantity changes
+            quantityInput.addEventListener('input', function () {
+                calculateTotal(quantityInput, priceInput, totalInput);
+                updateOrderTotal();
+            });
+        }
+
+        // Calculate total for a single item
+        function calculateTotal(quantityInput, priceInput, totalInput) {
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            totalInput.value = (quantity * price).toFixed(2);
+        }
+
+        // Update the order total
+        function updateOrderTotal() {
+            const totals = document.querySelectorAll('.total');
+            let orderTotal = 0;
+
+            totals.forEach(totalInput => {
+                orderTotal += parseFloat(totalInput.value) || 0;
+            });
+
+            document.getElementById('orderTotal').value = orderTotal.toFixed(2);
+        }
+
+        // Attach event listeners to existing rows on page load
+        document.querySelectorAll('#orderItems tbody tr').forEach(row => {
+            attachEventListeners(row);
+        });
+
+        // Search for customers
+        const customerSearch = document.getElementById('customerSearch');
+        if (customerSearch) {
+            customerSearch.addEventListener('input', function () {
+                const term = this.value;
+                fetch(`/api/Customer/Search?term=${term}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const customerSelect = document.querySelector('[name="CustomerId"]');
+                        customerSelect.innerHTML = data.map(customer => `
+                            <option value="${customer.customerId}">${customer.name}</option>
+                        `).join('');
+                    });
+            });
+        }
+
+        // Search for products
+        const productSearch = document.getElementById('productSearch');
+        if (productSearch) {
+            productSearch.addEventListener('input', function () {
+                const term = this.value;
+                fetch(`/api/Product/Search?term=${term}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const productSelects = document.querySelectorAll('.product-select');
+                        productSelects.forEach(select => {
+                            select.innerHTML = data.map(product => `
+                                <option value="${product.productId}">${product.name}</option>
+                            `).join('');
+                        });
+                    });
+            });
+        }
+    </script>
 }

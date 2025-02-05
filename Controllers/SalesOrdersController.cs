@@ -1,158 +1,125 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Mini_ERP.Data;
 using Mini_ERP.Models;
+using Mini_ERP.Repositories;
 
-namespace Mini_ERP.Controllers
+public class SalesOrdersController : Controller
 {
-    public class SalesOrdersController : Controller
+    private readonly ISalesOrderRepository _orderService;
+    private readonly ICustomersRepository _customerRepository;
+    private readonly IProductsRepository _productRepository;
+
+    public SalesOrdersController(
+        ISalesOrderRepository orderService,
+        ICustomersRepository customerRepository,
+        IProductsRepository productRepository)
     {
-        private readonly ApplicationDbContext _context;
+        _orderService = orderService;
+        _customerRepository = customerRepository;
+        _productRepository = productRepository;
+    }
 
-        public SalesOrdersController(ApplicationDbContext context)
+    public async Task<IActionResult> Index()
+    {
+        var orders = await _orderService.GetSalesOrdersAsync();
+        return View(orders);
+    }
+
+    public async Task<IActionResult> Create()
+    {
+        var customers = await _customerRepository.GetCustomersAsync();
+        var products = await _productRepository.GetProductsAsync();
+
+        ViewBag.Customers = customers.Select(c => new SelectListItem
         {
-            _context = context;
-        }
+            Value = c.Id.ToString(), // Use the ID as the value
+            Text = c.Name // Use the name as the display text
+        }).ToList();
+        ViewBag.Products = products;
 
-        // GET: SalesOrders
-        public async Task<IActionResult> Index()
+        return View(new SalesOrder { OrderItems = new List<OrderItem> { new OrderItem() } });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(SalesOrder order)
+    {
+        if (ModelState.IsValid)
         {
-            return View(await _context.salesOrders.ToListAsync());
-        }
-
-        // GET: SalesOrders/Details/5
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var salesOrder = await _context.salesOrders
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (salesOrder == null)
-            {
-                return NotFound();
-            }
-
-            return View(salesOrder);
-        }
-
-        // GET: SalesOrders/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: SalesOrders/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,createdAt,DeliveryDate,Status,PaymentMethod,ShippingMethod,ShippingAddress,BillingAddress,Total,SubTotal")] SalesOrder salesOrder)
-        {
-            if (ModelState.IsValid)
-            {
-                salesOrder.Id = Guid.NewGuid();
-                _context.Add(salesOrder);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(salesOrder);
-        }
-
-        // GET: SalesOrders/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var salesOrder = await _context.salesOrders.FindAsync(id);
-            if (salesOrder == null)
-            {
-                return NotFound();
-            }
-            return View(salesOrder);
-        }
-
-        // POST: SalesOrders/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,createdAt,DeliveryDate,Status,PaymentMethod,ShippingMethod,ShippingAddress,BillingAddress,Total,SubTotal")] SalesOrder salesOrder)
-        {
-            if (id != salesOrder.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(salesOrder);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SalesOrderExists(salesOrder.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(salesOrder);
-        }
-
-        // GET: SalesOrders/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var salesOrder = await _context.salesOrders
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (salesOrder == null)
-            {
-                return NotFound();
-            }
-
-            return View(salesOrder);
-        }
-
-        // POST: SalesOrders/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            var salesOrder = await _context.salesOrders.FindAsync(id);
-            if (salesOrder != null)
-            {
-                _context.salesOrders.Remove(salesOrder);
-            }
-
-            await _context.SaveChangesAsync();
+            await _orderService.AddSalesOrderAsync(order);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool SalesOrderExists(Guid id)
+        var customers = await _customerRepository.GetCustomersAsync();
+        var products = await _productRepository.GetProductsAsync();
+
+        ViewBag.Customers = customers.Select(c => new SelectListItem
         {
-            return _context.salesOrders.Any(e => e.Id == id);
+            Value = c.Id.ToString(), // Use the ID as the value
+            Text = c.Name // Use the name as the display text
+        }).ToList();
+        ViewBag.Products = products;
+
+        return View(order);
+    }
+
+    public async Task<IActionResult> Edit(Guid id)
+    {
+        var order = await _orderService.GetSalesOrderByIdAsync(id);
+        if (order == null)
+        {
+            return NotFound();
         }
+
+        var customers = await _customerRepository.GetCustomersAsync();
+        var products = await _productRepository.GetProductsAsync();
+
+        ViewBag.Customers = customers.Select(c => new SelectListItem
+        {
+            Value = c.Id.ToString(), // Use the ID as the value
+            Text = c.Name // Use the name as the display text
+        }).ToList();
+        ViewBag.Products = products;
+
+        return View(order);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(SalesOrder order)
+    {
+        if (ModelState.IsValid)
+        {
+            await _orderService.UpdateSalesOrderAsync(order);
+            return RedirectToAction(nameof(Index));
+        }
+
+        var customers = await _customerRepository.GetCustomersAsync();
+        var products = await _productRepository.GetProductsAsync();
+
+        ViewBag.Customers = customers.Select(c => new SelectListItem
+        {
+            Value = c.Id.ToString(), // Use the ID as the value
+            Text = c.Name // Use the name as the display text
+        }).ToList();
+        ViewBag.Products = products;
+
+        return View(order);
+    }
+
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var order = await _orderService.GetSalesOrderByIdAsync(id);
+        if (order == null)
+        {
+            return NotFound();
+        }
+
+        return View(order);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
+    {
+        await _orderService.DeleteSalesOrderAsync(id);
+        return RedirectToAction(nameof(Index));
     }
 }

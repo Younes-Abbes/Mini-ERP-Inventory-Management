@@ -37,7 +37,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var product = await _context.GetProduct(id.Value);
+            var product = await _context.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -103,7 +103,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var product = await _context.GetProduct(id.Value);
+            var product = await _context.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -154,7 +154,7 @@ namespace Mini_ERP.Controllers
                 return NotFound();
             }
 
-            var product = await _context.GetProduct(id.Value);
+            var product = await _context.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -168,7 +168,7 @@ namespace Mini_ERP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var product = await _context.GetProduct(id);
+            var product = await _context.GetByIdAsync(id);
             if (product != null)
             {
                 await _context.DeleteProduct(id);

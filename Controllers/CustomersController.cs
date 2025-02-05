@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
+using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
     public class CustomersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICustomersRepository _customersRepository;
 
-        public CustomersController(ApplicationDbContext context)
+
+        public CustomersController(ApplicationDbContext context, ICustomersRepository customerRepository)
         {
             _context = context;
+            _customersRepository = customerRepository;
         }
 
         // GET: Customers
@@ -153,6 +157,13 @@ namespace Mini_ERP.Controllers
         private bool CustomerExists(Guid id)
         {
             return _context.customers.Any(e => e.Id == id);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search(string term)
+        {
+            var customers = await _customersRepository.GetCustomersAsync(term);
+            return Ok(customers);
         }
     }
 }

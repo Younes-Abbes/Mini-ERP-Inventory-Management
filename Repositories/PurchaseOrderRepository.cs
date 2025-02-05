@@ -8,7 +8,15 @@ namespace Mini_ERP.Repositories
     {
         Task<IEnumerable<PurchaseOrder>> GetOrders();
         Task<PurchaseOrder?> GetOrder(Guid id);
-        Task<PurchaseOrder> AddOrder(PurchaseOrder order);
+        Task AddPurchaseOrderAsync(PurchaseOrder order);
+        Task<IEnumerable<PurchaseOrder>> GetPurchaseOrdersAsync();
+        Task<PurchaseOrder> GetPurchaseOrderByIdAsync(Guid id);
+        Task UpdatePurchaseOrderAsync(PurchaseOrder order);
+        Task DeletePurchaseOrderAsync(int id);
+
+
+
+
         Task<PurchaseOrder?> UpdateOrder(Guid id, PurchaseOrder order);
         Task<PurchaseOrder?> DeleteOrder(Guid id);
 
@@ -34,11 +42,38 @@ namespace Mini_ERP.Repositories
         {
             return await _orders.Include(x => x.OrderItems).ThenInclude(oi => oi.Product).FirstOrDefaultAsync(p => p.Id == id);
         }
-        public async Task<PurchaseOrder> AddOrder(PurchaseOrder order)
+        public async Task AddPurchaseOrderAsync(PurchaseOrder order)
         {
-            var entry = await _orders.AddAsync(order);
+            _context.PurchaseOrders.Add(order);
             await _context.SaveChangesAsync();
-            return entry.Entity;
+        }
+        public async Task<IEnumerable<PurchaseOrder>> GetPurchaseOrdersAsync()
+        {
+            return await _context.PurchaseOrders
+                .Include(o => o.supplier)
+                .Include(o => o.OrderItems)
+                .ToListAsync();
+        }
+        public async Task<PurchaseOrder> GetPurchaseOrderByIdAsync(Guid id)
+        {
+            return await _context.PurchaseOrders
+                .Include(o => o.supplier)
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        }
+        public async Task DeletePurchaseOrderAsync(int id)
+        {
+            var order = await _context.PurchaseOrders.FindAsync(id);
+            if (order != null)
+            {
+                _context.PurchaseOrders.Remove(order);
+                await _context.SaveChangesAsync();
+            }
+        }
+        public async Task UpdatePurchaseOrderAsync(PurchaseOrder order)
+        {
+            _context.PurchaseOrders.Update(order);
+            await _context.SaveChangesAsync();
         }
         public async Task<PurchaseOrder?> UpdateOrder(Guid id, PurchaseOrder order)
         {
