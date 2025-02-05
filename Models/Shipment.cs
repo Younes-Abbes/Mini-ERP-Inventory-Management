@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mini_ERP.Models
 {
@@ -16,11 +16,9 @@ namespace Mini_ERP.Models
         [Key]
         public Guid Id { get; set; }
 
-        [Required]
-        public DateTime ShippedDate { get; set; }
-
-        [Required]
-        public DateTime DeliveryDate { get; set; }
+        // These dates start as null and are set automatically on status transitions.
+        public DateTime? ShippedDate { get; set; }
+        public DateTime? DeliveryDate { get; set; }
 
         [Required]
         public ShipmentStatus Status { get; set; }

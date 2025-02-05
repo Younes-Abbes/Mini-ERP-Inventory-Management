@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
@@ -52,8 +51,8 @@ namespace Mini_ERP.Controllers
         }
 
         // POST: Shipments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // Only the fields provided by the form are bound. The shipment is always created as Pending,
+        // and the dates are left null until updated by the system.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,ShippedDate,DeliveryDate,Status")] Shipment shipment)
@@ -61,6 +60,11 @@ namespace Mini_ERP.Controllers
             if (ModelState.IsValid)
             {
                 shipment.Id = Guid.NewGuid();
+                // Force new shipments to be Pending with no dates set.
+                shipment.Status = ShipmentStatus.Pending;
+                shipment.ShippedDate = null;
+                shipment.DeliveryDate = null;
+
                 _context.Add(shipment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -85,38 +89,100 @@ namespace Mini_ERP.Controllers
         }
 
         // POST: Shipments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // Only bind Id and Status since the dates should be managed internally.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,ShippedDate,DeliveryDate,Status")] Shipment shipment)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Status")] Shipment updatedShipment)
         {
-            if (id != shipment.Id)
+            if (id != updatedShipment.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            // Retrieve the current shipment record from the database.
+            var shipment = await _context.shipments.FindAsync(id);
+            if (shipment == null)
             {
-                try
-                {
-                    _context.Update(shipment);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ShipmentExists(shipment.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            return View(shipment);
+
+            // Prevent any changes if the shipment is already Delivered or Cancelled.
+            if (shipment.Status == ShipmentStatus.Delivered || shipment.Status == ShipmentStatus.Cancelled)
+            {
+                ModelState.AddModelError("", "Cannot modify a Delivered or Cancelled shipment.");
+                return View(shipment);
+            }
+
+            // Process the status change if the status is different.
+            if (shipment.Status != updatedShipment.Status)
+            {
+                switch (shipment.Status)
+                {
+                    case ShipmentStatus.Pending:
+                        // From Pending, allowed transitions: Shipped or Cancelled.
+                        if (updatedShipment.Status == ShipmentStatus.Shipped)
+                        {
+                            shipment.Status = ShipmentStatus.Shipped;
+                            shipment.ShippedDate = DateTime.UtcNow;
+                        }
+                        else if (updatedShipment.Status == ShipmentStatus.Cancelled)
+                        {
+                            shipment.Status = ShipmentStatus.Cancelled;
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("", "From Pending, allowed transitions are only to Shipped or Cancelled.");
+                            return View(shipment);
+                        }
+                        break;
+
+                    case ShipmentStatus.Shipped:
+                        // From Shipped, allowed transitions: Delivered or Cancelled.
+                        if (updatedShipment.Status == ShipmentStatus.Delivered)
+                        {
+                            shipment.Status = ShipmentStatus.Delivered;
+                            shipment.DeliveryDate = DateTime.UtcNow;
+                        }
+                        else if (updatedShipment.Status == ShipmentStatus.Cancelled)
+                        {
+                            shipment.Status = ShipmentStatus.Cancelled;
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("", "From Shipped, allowed transitions are only to Delivered or Cancelled.");
+                            return View(shipment);
+                        }
+                        break;
+
+                    default:
+                        ModelState.AddModelError("", "Invalid status transition.");
+                        return View(shipment);
+                }
+            }
+            else
+            {
+                // If no status change is detected, nothing is updated.
+                ModelState.AddModelError("", "No changes detected in the status.");
+                return View(shipment);
+            }
+
+            try
+            {
+                _context.Update(shipment);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ShipmentExists(shipment.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Shipments/Delete/5
@@ -147,7 +213,6 @@ namespace Mini_ERP.Controllers
             {
                 _context.shipments.Remove(shipment);
             }
-
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
