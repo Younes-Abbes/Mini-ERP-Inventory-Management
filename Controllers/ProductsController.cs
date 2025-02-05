@@ -15,7 +15,7 @@ using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
-    [Authorize]
+    [Authorize("Admin")]
     public class ProductsController : Controller
     {
         private readonly IProductsRepository _context;

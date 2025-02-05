@@ -11,7 +11,7 @@ using Mini_ERP.Models;
 
 namespace Mini_ERP.Controllers
 {
-    [Authorize]
+    [Authorize("Admin")]
     public class CustomersController : Controller
     {
         private readonly ApplicationDbContext _context;

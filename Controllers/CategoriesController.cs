@@ -12,7 +12,7 @@ using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
-    [Authorize]
+    [Authorize("Admin")]
     public class CategoriesController : Controller
     {
         private readonly ICategoriesRepository _context;
