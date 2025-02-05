@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Mini_ERP.Data;
 using Mini_ERP.Models;
+using Mini_ERP.Repositories;
 
 namespace Mini_ERP.Controllers
 {
@@ -15,10 +16,14 @@ namespace Mini_ERP.Controllers
     public class SuppliersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ISuppliersRepository _suppliersRepository;
 
-        public SuppliersController(ApplicationDbContext context)
+
+        public SuppliersController(ApplicationDbContext context, ISuppliersRepository suppliersRepository)
         {
             _context = context;
+            _suppliersRepository = suppliersRepository;
+
         }
 
         // GET: Suppliers
@@ -155,6 +160,13 @@ namespace Mini_ERP.Controllers
         private bool SupplierExists(Guid id)
         {
             return _context.suppliers.Any(e => e.Id == id);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search(string term)
+        {
+            var suppliers = await _suppliersRepository.GetSuppliersAsync(term);
+            return Ok(suppliers);
         }
     }
 }

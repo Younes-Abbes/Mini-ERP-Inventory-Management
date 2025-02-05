@@ -8,7 +8,8 @@ namespace Mini_ERP.Repositories
     public interface IProductsRepository
     {
         Task<IEnumerable<Product>> GetProducts();
-        Task<Product?> GetProduct(Guid id);
+        Task<IEnumerable<Product>> GetProductsAsync(string searchTerm = null);
+        Task<Product> GetByIdAsync(Guid id);
         Task<Product> AddProduct(Product product);
         Task<Product?> UpdateProduct(Guid id, Product product);
         Task<Product?> DeleteProduct(Guid id);
@@ -31,9 +32,21 @@ namespace Mini_ERP.Repositories
         {
             return await _products.Include(x => x.category).ToListAsync();
         }
-        public async Task<Product?> GetProduct(Guid id)
+        public async Task<IEnumerable<Product>> GetProductsAsync(string searchTerm = null)
         {
-            return await _products.Include(x => x.category).FirstOrDefaultAsync(p => p.Id == id);
+            var query = _context.products.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(p => p.Name.Contains(searchTerm));
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<Product> GetByIdAsync(Guid id)
+        {
+            return await _context.products.FindAsync(id);
         }
         public async Task<Product> AddProduct(Product product)
         {
@@ -89,10 +102,11 @@ namespace Mini_ERP.Repositories
         
         public async Task<Product?> RestoreProduct(Guid id)
         {
-            var product = await GetProduct(id);
+            var product = await GetByIdAsync(id);
             product.IsDeleted = false;
             await UpdateProduct(id, product);
             return product;
         }
+
     }
 }

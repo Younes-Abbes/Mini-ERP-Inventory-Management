@@ -8,7 +8,15 @@ namespace Mini_ERP.Repositories
     {
         Task<IEnumerable<SalesOrder>> GetOrders();
         Task<SalesOrder?> GetOrder(Guid id);
-        Task<SalesOrder> AddOrder(SalesOrder order);
+        Task AddSalesOrderAsync(SalesOrder order);
+        Task<IEnumerable<SalesOrder>> GetSalesOrdersAsync();
+        Task<SalesOrder> GetSalesOrderByIdAsync(Guid id);
+        Task UpdateSalesOrderAsync(SalesOrder order);
+        Task DeleteSalesOrderAsync(Guid id);
+
+
+
+
         Task<SalesOrder?> UpdateOrder(Guid id, SalesOrder order);
         Task<SalesOrder?> DeleteOrder(Guid id);
 
@@ -34,12 +42,41 @@ namespace Mini_ERP.Repositories
         {
             return await _orders.Include(x => x.OrderItems).ThenInclude(oi => oi.Product).FirstOrDefaultAsync(p => p.Id == id);
         }
-        public async Task<SalesOrder> AddOrder(SalesOrder order)
+        public async Task AddSalesOrderAsync(SalesOrder order)
         {
-            var entry = await _orders.AddAsync(order);
+            _context.salesOrders.Add(order);
             await _context.SaveChangesAsync();
-            return entry.Entity;
         }
+        public async Task<IEnumerable<SalesOrder>> GetSalesOrdersAsync()
+        {
+            return await _context.salesOrders
+                .Include(o => o.customer)
+                .Include(o => o.OrderItems)
+                .ToListAsync();
+        }
+        public async Task<SalesOrder> GetSalesOrderByIdAsync(Guid id)
+        {
+            return await _context.salesOrders
+                .Include(o => o.customer)
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        }
+        public async Task UpdateSalesOrderAsync(SalesOrder order)
+        {
+            _context.salesOrders.Update(order);
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteSalesOrderAsync(Guid id)
+        {
+            var order = await _context.salesOrders.FindAsync(id);
+            if (order != null)
+            {
+                _context.salesOrders.Remove(order);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
         public async Task<SalesOrder?> UpdateOrder(Guid id, SalesOrder order)
         {
             var existingOrder = await _orders.FindAsync(id);

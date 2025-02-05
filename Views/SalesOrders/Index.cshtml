@@ -1,83 +1,29 @@
-@model IEnumerable<Mini_ERP.Models.SalesOrder>
+@model IEnumerable<SalesOrder>
 
-@{
-    ViewData["Title"] = "Index";
-}
+<h2>Sales Orders</h2>
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.createdAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DeliveryDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentMethod)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ShippingMethod)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ShippingAddress)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BillingAddress)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SubTotal)
-            </th>
-            <th></th>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.createdAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DeliveryDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentMethod)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ShippingMethod)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ShippingAddress)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BillingAddress)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SubTotal)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.Id</td>
+                <td>@order.customer.Name</td>
+                <td>@order.createdAt.ToShortDateString()</td>
+                <td>@order.Total.ToString("C")</td>
+                <td>@order.Status</td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<a asp-action="Create" class="btn btn-primary">Create New Sales Order</a>

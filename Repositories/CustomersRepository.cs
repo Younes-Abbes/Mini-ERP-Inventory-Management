@@ -8,6 +8,8 @@ namespace Mini_ERP.Repositories
     {
         Task<IEnumerable<Customer>> GetCustomers();
         Task<Customer?> GetCustomer(Guid id);
+        Task<IEnumerable<Customer>> GetCustomersAsync(string searchTerm = null);
+
         Task<Customer> AddCustomer(Customer customer);
         Task<Customer?> UpdateCustomer(Guid id, Customer customer);
         Task<Customer?> DeleteCustomer(Guid id);
@@ -31,6 +33,17 @@ namespace Mini_ERP.Repositories
         public async Task<Customer?> GetCustomer(Guid id)
         {
             return await _customers.FirstOrDefaultAsync(c => c.Id == id);
+        }
+        public async Task<IEnumerable<Customer>> GetCustomersAsync(string searchTerm = null)
+        {
+            var query = _context.customers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(c => c.Name.Contains(searchTerm));
+            }
+
+            return await query.ToListAsync();
         }
         public async Task<Customer> AddCustomer(Customer customer)
         {
